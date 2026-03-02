@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:embed_annotation/embed_annotation.dart';
 import 'package:bridge/bridge.dart';
+import 'package:ffsds3/ffsds3.dart' show Logger;
 
 part 'bridge.g.dart';
 
@@ -17,13 +18,14 @@ void main() => runZonedGuarded(
     if (!libaio.existsSync()) libaio.writeAsBytesSync(libaioBytes);
 
     await Ds3Bridge.start().then((server) async {
-      stdout.writeln('listening on ${InternetAddress.anyIPv4}:${server.port}');
+      Logger.root.info(
+        'listening on ${InternetAddress.anyIPv4.address}:${server.port}',
+      );
       await server.released;
     });
   },
   (err, st) {
-    stderr.writeln('--- FATAL ERROR ---');
-    stderr.writeln('$err\n$st');
-    exitCode = 1;
+    Logger.root.fatal('Fatal error in bridge', err, st);
+    exit(1);
   },
 );

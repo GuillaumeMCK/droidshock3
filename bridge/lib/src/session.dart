@@ -3,13 +3,14 @@ import 'dart:typed_data';
 
 import 'package:using/using.dart';
 
+import 'logger.dart';
 import 'protocol.dart';
 
 typedef FrameHandler = void Function(Op op, Uint8List payload);
 
 typedef CloseHandler = void Function();
 
-final class Session with Releasable {
+final class Session with Releasable, BridgeLogger {
   /// A session represents a single client connection to the server. It listens
   /// for incoming frames and passes them to [onFrame], and allows sending output
   /// frames back to the client. When the session is closed, [onClose] is called.
@@ -32,8 +33,6 @@ final class Session with Releasable {
 
   late final String remoteAddress;
 
-  bool get isOpen => !isReleased;
-
   final FrameHandler onFrame;
 
   final CloseHandler onClose;
@@ -54,8 +53,7 @@ final class Session with Releasable {
   }
 
   void _onError(Object error, StackTrace stackTrace) {
-    stderr.writeln('Error on session with $remoteAddress: $error');
-    stderr.writeln(stackTrace);
+    log.error('Error on session with $remoteAddress:', error, stackTrace);
     release();
   }
 
@@ -65,8 +63,8 @@ final class Session with Releasable {
 
   void _onEvent(RawSocketEvent event) {
     switch (event) {
-      case .readClosed || .closed:
-        release();
+      case .closed:
+        onClose();
       case .read:
         final chunk = _socket.read();
         if (chunk == null || chunk.isEmpty || chunk.length > Op.frameLength) {
@@ -86,7 +84,5 @@ final class Session with Releasable {
   void release() {
     if (isReleased) return;
     super.release();
-    onClose();
-    _socket.close();
   }
 }

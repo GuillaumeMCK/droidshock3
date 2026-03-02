@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:ffsds3/ffsds3.dart';
 import 'package:using/using.dart';
 
+import 'logger.dart';
 import 'session.dart';
 import 'protocol.dart';
 
@@ -12,15 +13,14 @@ const kBridgeDir = '/data/local/tmp/ds3_bridge';
 
 const kBridgeProcessFile = '$kBridgeDir/process.txt';
 
-final class Ds3Bridge with Releasable {
+final class Ds3Bridge with Releasable, BridgeLogger {
   /// A single-client TCP server that bridges between a DualShock 3 gadget
   /// and a client speaking the simple protocol defined in protocol.dart.
   Ds3Bridge._(this._server, this._gadget, this._ds3) {
-    _server.listen(_onIncoming, onDone: release, cancelOnError: true);
+    _server.listen(_onIncoming, onDone: release, cancelOnError: false);
     _outputTimer = .periodic(const Duration(milliseconds: 10), (_) {
-      final session = _session;
-      if (session == null || !session.isOpen) return;
-      session.sendOutput(_ds3.output.bytes);
+      if (_session case Session(isReleased: true)?) return;
+      _session?.sendOutput(_ds3.output.bytes);
     });
   }
 
@@ -28,7 +28,7 @@ final class Ds3Bridge with Releasable {
     final server = await RawServerSocket.bind(InternetAddress.anyIPv4, 0);
     final (gadget, ds3) = createDualshock3();
     try {
-      File(kBridgeProcessFile).writeAsStringSync('$pid:${server.port}');
+      await File(kBridgeProcessFile).writeAsString('$pid:${server.port}');
       await gadget.bind();
       return Ds3Bridge._(server, gadget, ds3);
     } catch (_) {
@@ -50,21 +50,19 @@ final class Ds3Bridge with Releasable {
   Timer? _outputTimer;
 
   Future<void> _onIncoming(RawSocket socket) async {
-    if (_session != null && _session!.isOpen) {
-      stdout.writeln(
-        'rejected extra connection from '
-        '${socket.remoteAddress.address}:${socket.remotePort}',
+    if (_session != null) {
+      log.warn(
+        'Rejected connection from ${socket.remoteAddress} - already have a client',
       );
-      await socket.close();
+      socket.close();
       return;
     }
-
-    _session = Session(
+    log.info('Client connected: ${socket.remoteAddress.address}');
+    _session ??= Session(
       socket: socket,
       onFrame: _onFrame,
       onClose: _onSessionClosed,
     );
-    stdout.writeln('client connected: ${_session!.remoteAddress}');
   }
 
   void _onFrame(Op op, Uint8List payload) {
@@ -77,7 +75,8 @@ final class Ds3Bridge with Releasable {
   }
 
   void _onSessionClosed() {
-    stdout.writeln('client disconnected: ${_session?.remoteAddress}');
+    log.info('Client disconnected: ${_session?.remoteAddress}');
+    _session?.release();
     _session = null;
   }
 
@@ -93,6 +92,6 @@ final class Ds3Bridge with Releasable {
 
     await _server.close();
     await _gadget.unbind();
-    this._released.complete();
+    _released.complete();
   }
 }
