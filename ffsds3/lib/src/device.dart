@@ -157,7 +157,7 @@ final class Dualshock3 extends HIDFunctionFs {
     super.onEnable();
     log?.info('Controller configured by host');
     _epInTimer ??= .periodic(config.reportInterval, (_) {
-      if (features.inputStreamingEnabled) {
+      if (features.inputStreamingEnabled && state == .enabled) {
         epIn.write(input.bytes);
       }
     });
