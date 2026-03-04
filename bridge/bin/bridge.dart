@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:embed_annotation/embed_annotation.dart';
 import 'package:bridge/bridge.dart';
-import 'package:ffsds3/ffsds3.dart' show Logger;
 
 part 'bridge.g.dart';
 
@@ -12,20 +11,30 @@ final List<int> libaioBytes = _$libaioBytes;
 
 const kLibaioPath = '$kBridgeDir/libaio.so';
 
-void main() => runZonedGuarded(
+const kProcessPath = '$kBridgeDir/process';
+
+void main(List<String> args) => runZonedGuarded(
   () async {
     final libaio = File(kLibaioPath);
     if (!libaio.existsSync()) libaio.writeAsBytesSync(libaioBytes);
 
-    await Ds3Bridge.start().then((server) async {
-      Logger.root.info(
+    final processFile = switch (args) {
+      ['--process-path', final processPath] => File(processPath),
+      _ => File(kProcessPath),
+    };
+
+    await Ds3Bridge.start.then((server) async {
+      stdout.writeln(
         'listening on ${InternetAddress.anyIPv4.address}:${server.port}',
       );
+      processFile.writeAsStringSync('$pid:${server.port}');
       await server.released;
     });
   },
   (err, st) {
-    Logger.root.fatal('Fatal error in bridge', err, st);
+    stderr.writeln('--- Bridge encountered a fatal error ---');
+    stderr.writeln('Error: $err');
+    stderr.writeln('Stack trace:\n$st');
     exit(1);
   },
 );

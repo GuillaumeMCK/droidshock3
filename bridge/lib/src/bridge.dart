@@ -11,8 +11,6 @@ import 'protocol.dart';
 
 const kBridgeDir = '/data/local/tmp/ds3_bridge';
 
-const kBridgeProcessFile = '$kBridgeDir/process.txt';
-
 final class Ds3Bridge with Releasable, BridgeLogger {
   /// A single-client TCP server that bridges between a DualShock 3 gadget
   /// and a client speaking the simple protocol defined in protocol.dart.
@@ -24,11 +22,11 @@ final class Ds3Bridge with Releasable, BridgeLogger {
     });
   }
 
-  static Future<Ds3Bridge> start() async {
-    final server = await RawServerSocket.bind(InternetAddress.anyIPv4, 0);
+  static Future<Ds3Bridge> get start async {
+    late final RawServerSocket server;
     final (gadget, ds3) = createDualshock3();
     try {
-      await File(kBridgeProcessFile).writeAsString('$pid:${server.port}');
+      server = await RawServerSocket.bind(InternetAddress.anyIPv4, 0);
       await gadget.bind();
       return Ds3Bridge._(server, gadget, ds3);
     } catch (_) {
