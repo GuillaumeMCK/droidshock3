@@ -181,10 +181,10 @@ packages:
     dependency: "direct main"
     description:
       name: usb_gadget
-      sha256: "639599fde9cc65fdfae20538bb58bafbefdc87c9789ad507f793aa69acbabbb5"
+      sha256: "6ec27f8dd16ab5715792679253365dbc8d32b375059f9dedbcaa6cab9b9111fb"
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.3"
+    version: "0.5.0"
   using:
     dependency: transitive
     description:
