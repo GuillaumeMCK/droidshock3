@@ -1,0 +1,10 @@
+plugins:
+  leancode_lint:
+    version: ^20.0.0
+
+analyzer:
+  errors:
+    always_put_control_body_on_new_line: ignore
+  exclude:
+    - '**/*.g.dart'
+    - '**/*.freezed.dart'
