@@ -18,6 +18,7 @@ class AppWidget extends HookWidget {
   const AppWidget({required this.title, super.key});
 
   final String title;
+  static bool replaced = false;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +27,7 @@ class AppWidget extends HookWidget {
 
     usePostFrameEffect(
       () => switch (bootstrap) {
-        BootstrapLoaded() => router.replace(const HomeRoute()),
+        BootstrapLoaded() => router.replace(const AppShellRoute()),
         _ => null,
       },
       keys: [bootstrap],
@@ -35,8 +36,8 @@ class AppWidget extends HookWidget {
     return ShadApp.router(
       title: title,
       themeMode: .system,
-      theme: themeData(0xFF00439C, false),
-      darkTheme: themeData(0xFF00439C, true),
+      theme: lightTheme,
+      darkTheme: darkTheme,
       scrollBehavior: NoScrollBehavior(),
       routerConfig: router.config(),
       locale: const Locale('en', 'US'),

@@ -11,11 +11,12 @@ class AppShellPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ShadThemeData(:colorScheme) = context.theme;
     return LayoutBuilder(
       builder: (context, constraints) => Provider<AppConstraints>.value(
         value: constraints,
-        child: FocusScope(child: SafeArea(child: AutoRouter())),
+        child: FocusScope(
+          child: SafeArea(child: AutoRouter(clipBehavior: .none)),
+        ),
       ),
     );
   }
