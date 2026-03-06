@@ -5,40 +5,43 @@ export 'package:shadcn_ui/shadcn_ui.dart';
 const ShadStoneColorScheme _lightTheme = .light();
 const ShadStoneColorScheme _darkTheme = .dark();
 
-ShadThemeData themeData(int? hue, bool isDark) {
+final ShadThemeData lightTheme = _themeData(false);
+final ShadThemeData darkTheme = _themeData(true);
+
+const Color _primary = Color(0xFF0043C9);
+
+ShadThemeData _themeData(bool isDark) {
   final theme = isDark ? _darkTheme : _lightTheme;
-  final rawColor = hue ?? theme.primary.toARGB32();
-  final primary = Color(rawColor).shiftBrightness();
-  final secondary = Color.lerp(theme.secondary, primary, .01);
-  final input = (isDark ? const Color(0xFF2D2D2D) : const Color(0xFFFFFFFF));
+  final secondary = Color.lerp(theme.secondary, _primary, .01);
+  final input = isDark ? const Color(0xFF2D2D2D) : const Color(0xFFFFFFFF);
   final background = isDark ? const Color(0xFF000000) : const Color(0xFFF9F9F9);
-  final adaptative = input.shiftBrightness(
+  final adaptative = input.shiftLightness(
     darkAmount: isDark ? -.145 : .15,
     lightAmount: isDark ? .15 : -.05,
   );
   final colorScheme = theme.copyWith(
-    primary: primary,
+    primary: _primary,
     background: background,
     secondary: secondary,
     input: input,
     popover: input,
-    popoverForeground: .lerp(theme.popoverForeground, primary, .01),
+    popoverForeground: .lerp(theme.popoverForeground, _primary, .01),
     card: adaptative,
-    cardForeground: .lerp(theme.cardForeground, primary, .01),
-    ring: .lerp(theme.ring, primary, .1)!.faint,
-    foreground: .lerp(theme.foreground, primary, .01)!.withAlpha(225),
+    cardForeground: .lerp(theme.cardForeground, _primary, .01),
+    ring: .lerp(theme.ring, _primary, .1)!.alphaFaint,
+    foreground: .lerp(theme.foreground, _primary, .01)!.withAlpha(225),
     destructive: const Color(0xFFE00004),
-    accent: .lerp(theme.accent, primary, .01),
-    accentForeground: .lerp(theme.accentForeground, primary, .01),
-    muted: .lerp(theme.muted, primary, .01),
+    destructiveForeground: const Color(0xFFFFDDDD),
+    accent: .lerp(theme.accent, _primary, .01),
+    accentForeground: .lerp(theme.accentForeground, _primary, .01),
+    muted: .lerp(theme.muted, _primary, .01),
     mutedForeground: theme.mutedForeground.withAlpha(225),
-    selection: primary.withAlpha(isDark ? 75 : 40),
+    selection: _primary.withAlpha(isDark ? 75 : 40),
     border: isDark ? const Color(0xFF2A2B2F) : const Color(0xFFEAEAEC),
   );
   return ShadThemeData(
     brightness: isDark ? .dark : .light,
     colorScheme: colorScheme,
-    buttonSizesTheme: _buttonsSizes,
     textTheme: textTheme(colorScheme),
     popoverTheme: _popoverTheme(colorScheme),
     accordionTheme: const ShadAccordionTheme(padding: .all(4)),
@@ -49,19 +52,22 @@ ShadThemeData themeData(int? hue, bool isDark) {
       padding: const .all(8),
     ),
     selectTheme: ShadSelectTheme(
-      decoration: _selectDecoration(colorScheme),
+      decoration: ShadDecoration(
+        color: colorScheme.transparent,
+        border: .none,
+        secondaryErrorBorder: .all(color: colorScheme.destructive),
+      ),
       padding: const .symmetric(horizontal: 8, vertical: 6),
       anchor: const ShadAnchorAuto(),
       popoverReverseDuration: 50.ms,
     ),
+    buttonSizesTheme: _buttonsSizes,
     primaryButtonTheme: ShadButtonTheme(
-      backgroundColor: adaptative,
-      pressedBackgroundColor: theme.background,
-      foregroundColor: colorScheme.foreground,
-      hoverForegroundColor: colorScheme.foreground,
-      decoration: _buttonsDecoration.merge(
-        ShadDecoration(border: .all(color: colorScheme.border, width: .5)),
-      ),
+      backgroundColor: _primary,
+      pressedBackgroundColor: _primary.shiftLightness(),
+      foregroundColor: Color(0xFFFAFAFA),
+      hoverForegroundColor: Color(0xFFFFFFFF),
+      decoration: _buttonsDecoration,
     ),
     destructiveButtonTheme: ShadButtonTheme(
       backgroundColor: colorScheme.destructive,
@@ -71,24 +77,31 @@ ShadThemeData themeData(int? hue, bool isDark) {
       decoration: _buttonsDecoration,
     ),
     secondaryButtonTheme: ShadButtonTheme(
-      backgroundColor: adaptative.withAlpha(80),
-      pressedBackgroundColor: adaptative.withAlpha(110),
+      backgroundColor: secondary,
+      pressedBackgroundColor: theme.background,
       foregroundColor: colorScheme.mutedForeground,
+      hoverForegroundColor: colorScheme.foreground,
+      decoration: _buttonsDecoration.merge(
+        ShadDecoration(border: .all(color: colorScheme.border, width: .5)),
+      ),
+    ),
+    ghostButtonTheme: ShadButtonTheme(
+      backgroundColor: colorScheme.transparent,
+      pressedBackgroundColor: colorScheme.transparent,
+      foregroundColor: colorScheme.mutedForeground,
+      hoverForegroundColor: colorScheme.foreground,
     ),
   );
 }
 
 const _buttonsSizes = ShadButtonSizesTheme(
-  sm: ShadButtonSizeTheme(height: 36, padding: .symmetric(horizontal: 10)),
-  regular: ShadButtonSizeTheme(
-    height: 36 + 2,
-    padding: .symmetric(horizontal: 12),
-  ),
-  lg: ShadButtonSizeTheme(height: 36 + 4, padding: .symmetric(horizontal: 14)),
+  sm: ShadButtonSizeTheme(height: 30, padding: .symmetric(horizontal: 10)),
+  regular: ShadButtonSizeTheme(height: 36, padding: .symmetric(horizontal: 12)),
+  lg: ShadButtonSizeTheme(height: 40, padding: .symmetric(horizontal: 14)),
 );
 
-const _buttonRadius = BorderRadius.all(.circular(10));
-const _buttonFocusRadius = BorderRadius.all(.circular(14));
+const _buttonRadius = BorderRadius.all(.circular(50));
+const _buttonFocusRadius = BorderRadius.all(.circular(50));
 final _buttonsDecoration = ShadDecoration(
   border: .all(radius: _buttonRadius),
   secondaryErrorBorder: .all(radius: _buttonRadius),
@@ -97,19 +110,13 @@ final _buttonsDecoration = ShadDecoration(
   secondaryFocusedBorder: .all(radius: _buttonFocusRadius),
 );
 
-ShadDecoration _selectDecoration(ShadColorScheme colorScheme) => ShadDecoration(
-  color: colorScheme.transparent,
-  border: ShadBorder.none,
-  secondaryErrorBorder: .all(color: colorScheme.destructive),
-);
-
 ShadPopoverTheme _popoverTheme(ShadColorScheme colorScheme) {
   return ShadPopoverTheme(
     padding: const .all(2),
     shadows: const [],
     reverseDuration: 100.ms,
     decoration: ShadDecoration(
-      color: colorScheme.input.veryFaint,
+      color: colorScheme.input.alphaGhost,
       border: .all(color: colorScheme.border, radius: const .all(.circular(6))),
     ),
   );
@@ -127,10 +134,4 @@ extension ThemeUtilsX on BuildContext {
   bool get isDark => brightness == .dark;
 
   bool get isLight => brightness == .light;
-}
-
-extension ShadThemeDataX on ShadColorScheme {
-  Color get transparent => const Color(0x00000000);
-
-  Color get shadow => const Color(0x05000000);
 }
