@@ -1,7 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:universal_gamepad/universal_gamepad.dart';
+import 'package:gamepads/gamepads.dart';
 
 import '/common/common.dart';
 
@@ -10,27 +9,24 @@ part 'gamepads_state.dart';
 @lazySingleton
 class GamepadsCubit extends Cubit<GamepadsState> with AppLogger {
   GamepadsCubit() : super(GamepadsState()) {
-    _connectionEvents = _gamepad.connectionEvents.listen(_onConnectionEvent);
+    _pollingTimer = Timer.periodic(const Duration(seconds: 1), (_) async {
+      final gamepads = await Gamepads.list();
+      _onNewGamepads(gamepads);
+    });
   }
 
-  static final Gamepad _gamepad = .instance;
+  late Timer _pollingTimer;
 
-  late final StreamSubscription<GamepadConnectionEvent> _connectionEvents;
-
-  void _onConnectionEvent(GamepadConnectionEvent event) async {
-    switch (event) {
-      case GamepadConnectionEvent(connected: true, :final info):
-        log?.info('Gamepad connected: $info');
-        state.update([info, ...state]);
-      case GamepadConnectionEvent(connected: false, :final gamepadId):
-        log?.info('Gamepad disconnected: $gamepadId');
-        state.remove(gamepadId);
-    }
+  void _onNewGamepads(List<GamepadController> gamepads) {
+    final newState = state.clone..update(gamepads);
+    if (state == newState) return;
+    log?.debug('Received gamepad update: [${gamepads.join(', ')}]');
+    emit(newState);
   }
 
   @override
   Future<void> close() async {
-    _connectionEvents.cancel();
+    _pollingTimer.cancel();
     return super.close();
   }
 }

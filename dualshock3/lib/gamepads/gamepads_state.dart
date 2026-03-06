@@ -1,39 +1,55 @@
 part of 'gamepads_cubit.dart';
 
-final class GamepadsState extends Iterable<GamepadInfo> {
+final class GamepadsState extends Iterable<GamepadController> {
   GamepadsState() : _gamepads = {};
 
-  final Map<int, GamepadInfo> _gamepads;
+  final Map<String, GamepadController> _gamepads;
 
-  GamepadInfo? _paired;
+  GamepadController? _paired;
 
-  GamepadInfo? get pair => _paired;
+  GamepadController? get pair => _paired;
 
-  void set pair(GamepadInfo? name) => switch (name) {
-    GamepadInfo(:final id) when _gamepads.containsKey(id) => _paired = name,
+  void set pair(GamepadController? name) => switch (name) {
+    GamepadController(:final id) when _gamepads.containsKey(id) =>
+      _paired = name,
     _ => null,
   };
 
-  void update(List<GamepadInfo> current) {
-    for (final info in current) {
-      _gamepads[info.id] = info;
+  void update(List<GamepadController> gamepads) {
+    _gamepads.clear();
+    for (final gamepad in gamepads) {
+      _gamepads[gamepad.id] = gamepad;
     }
-    if (_paired case GamepadInfo(:final id) when this[id] == null) {
+    if (_paired case GamepadController(:final id)? when _gamepads[id] == null) {
       _paired = null;
     }
   }
 
-  void remove(int id) {
-    if (_paired case GamepadInfo(:final id) when id == id) {
+  void remove(String id) {
+    if (_paired case GamepadController(:final id) when id == id) {
       _paired = null;
     }
-    if (this[id] != null) {
+    if (_gamepads[id] != null) {
       _gamepads.remove(id);
     }
   }
 
-  @override
-  Iterator<GamepadInfo> get iterator => _gamepads.values.iterator;
+  GamepadsState get clone => GamepadsState()
+    .._gamepads.addAll(_gamepads)
+    .._paired = _paired;
 
-  GamepadInfo? operator [](int id) => _gamepads[id];
+  GamepadController? operator [](int id) => elementAt(id);
+
+  @override
+  Iterator<GamepadController> get iterator => _gamepads.values.iterator;
+
+  @override
+  bool operator ==(Object other) =>
+      other is GamepadsState &&
+      pair == other.pair &&
+      _gamepads.length == other._gamepads.length &&
+      _gamepads.keys.every(other._gamepads.containsKey);
+
+  @override
+  int get hashCode => Object.hash(_gamepads.keys.toSet(), _paired);
 }
