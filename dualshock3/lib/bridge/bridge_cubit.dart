@@ -39,14 +39,14 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
 
   Future<void> sendInputReport(InputReport input) async {
     if (state.type != .connected) {
-      return log?.warning('Send input called when not connected');
+      return log?.warn('Send input called when not connected');
     }
     _socket?.add(input.bytes);
   }
 
   Future<void> setup() async => runZonedGuarded(() async {
     if (state.type case .setup || .ready || .connected) {
-      return log?.warning('Setup already in progress or completed');
+      return log?.warn('Setup already in progress or completed');
     }
     emit(.setup);
     final tmp = '$fTmpDir/bridge';
@@ -78,7 +78,7 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
 
   Future<void> connect() async => runZonedGuarded(() async {
     if (state.type != .ready) {
-      return log?.warning('Start bridge called before setup');
+      return log?.warn('Start bridge called before setup');
     }
 
     await Future.delayed(const .new(milliseconds: 100));

@@ -13,25 +13,17 @@ class BridgePage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ShadThemeData(:textTheme, :colorScheme) = context.theme;
-
-    return Stack(
-      fit: .expand,
-      children: [
-        Positioned.fill(child: _BridgeLogView()),
-        Align(alignment: .topCenter, child: _BridgeControls()),
-        Align(
-          alignment: .bottomRight,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ShadIconButton(
-              backgroundColor: colorScheme.secondary,
-              icon: Icon(LucideIcons.x),
-              onPressed: () => context.router.pop(),
-            ),
+    return ColoredBox(
+      color: context.theme.colorScheme.background,
+      child: Column(
+        children: [
+          Expanded(child: _BridgeLogView()),
+          Padding(
+            padding: .symmetric(horizontal: 16, vertical: 8),
+            child: _BridgeControls(),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -39,34 +31,88 @@ class BridgePage extends HookWidget {
 class _BridgeControls extends HookWidget {
   const _BridgeControls();
 
+  static bool _pending = true;
+
   @override
   Widget build(BuildContext context) {
-    final ShadThemeData(:colorScheme) = context.theme;
+    final ShadThemeData(:colorScheme, :textTheme) = context.theme;
     final cubit = useMemoized(context.read<BridgeCubit>);
     final state = useBlocState(cubit);
-    return Container(
-      padding: .symmetric(horizontal: 24, vertical: 4),
-      decoration: BoxDecoration(color: colorScheme.background),
+
+    final pending = useState(_pending);
+
+    useEffect(() {
+      _pending = pending.value;
+      return null;
+    }, [pending.value]);
+
+    return ShadCard(
+      radius: .circular(50),
       child: Column(
         mainAxisSize: .min,
-        spacing: 8,
+        spacing: 16,
         children: [
+          ?switch (state) {
+            BridgeError(:final error, :final stackTrace) => Text(
+              '$error\n$stackTrace',
+              style: textTheme.muted.xs,
+            ),
+            BridgeClosed(previousState: final BridgeError status) => Text(
+              '${status.error}\n${status.stackTrace}',
+              style: textTheme.muted.xs,
+            ),
+            _ => null,
+          },
           Row(
             spacing: 8,
-            mainAxisAlignment: .spaceBetween,
             children: [
-              ShadBadge.outline(child: Text(state.type.name.toUpperCase())),
+              ShadButton(
+                enabled: pending.value,
+                onPressed: () async {
+                  try {
+                    pending.value = false;
+                    await cubit.shutdown();
+                    await cubit.setup();
+                    await cubit.connect();
+                  } finally {
+                    pending.value = true;
+                  }
+                },
+                leading: Icon(
+                  LucideIcons.rotateCcw,
+                  color: colorScheme.destructiveForeground,
+                  size: 14,
+                ),
+                child: ShadBadge.destructive(
+                  backgroundColor: colorScheme.card.alphaGhost,
+                  child: Text(state.type.name.toUpperCase()),
+                ),
+              ),
               ShadButton.destructive(
-                onPressed: () => cubit.shutdown(),
-                child: const Text('Shutdown'),
+                onPressed: () async {
+                  try {
+                    pending.value = false;
+                    await cubit.shutdown();
+                  } finally {
+                    pending.value = true;
+                  }
+                },
+                decoration: ShadDecoration(border: .all(radius: .circular(12))),
+                leading: Icon(
+                  LucideIcons.powerOff,
+                  color: colorScheme.destructiveForeground,
+                  size: 14,
+                ),
+              ),
+              Expanded(
+                child: ShadButton.ghost(
+                  onPressed: context.router.pop,
+                  leading: Icon(LucideIcons.chevronLeft),
+                  child: const Text('Back'),
+                ),
               ),
             ],
           ),
-          if (state case BridgeError(:final error, :final stackTrace))
-            Text('$error\n$stackTrace'),
-          if (state case BridgeClosed(:final previousState))
-            if (previousState case BridgeError(:final error, :final stackTrace))
-              Text('$error\n$stackTrace'),
         ],
       ),
     );
@@ -96,7 +142,7 @@ class _BridgeLogView extends HookWidget {
         controller.animateTo(
           controller.position.maxScrollExtent,
           duration: 200.ms,
-          curve: Effects.engagingCurve,
+          curve: Curves.easeInOutCubicEmphasized,
         );
       }
       return null;
@@ -105,6 +151,7 @@ class _BridgeLogView extends HookWidget {
     return SingleChildScrollView(
       padding: .symmetric(horizontal: 4, vertical: 8),
       controller: controller,
+      clipBehavior: .none,
       child: switch (logs) {
         AsyncSnapshot(error: null, hasData: false) => SizedBox.shrink(),
         AsyncSnapshot(hasData: true, data: final log) => Text(
