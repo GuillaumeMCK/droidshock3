@@ -44,8 +44,8 @@ class Logger {
     _log(LogLevel.info, message, error, stack);
   }
 
-  void warning(String message, [Object? error, StackTrace? stack]) {
-    _log(LogLevel.warning, message, error, stack);
+  void warn(String message, [Object? error, StackTrace? stack]) {
+    _log(LogLevel.warn, message, error, stack);
   }
 
   void error(String message, [Object? error, StackTrace? stack]) {
@@ -76,7 +76,7 @@ class Logger {
 enum LogLevel {
   debug(0),
   info(1),
-  warning(2),
+  warn(2),
   error(3);
 
   const LogLevel(this.level);
