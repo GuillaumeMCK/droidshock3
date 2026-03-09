@@ -5,7 +5,7 @@ environment:
   sdk: ^3.11.0
 
 dependencies:
-  usb_gadget: ^0.5.0
+  usb_gadget: ^0.6.0
 
 dev_dependencies:
-  leancode_lint: ^21.0.0+1
+  leancode_lint: ^22.0.0

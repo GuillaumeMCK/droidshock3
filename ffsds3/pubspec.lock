@@ -77,10 +77,10 @@ packages:
     dependency: transitive
     description:
       name: dart_style
-      sha256: "6f6b30cba0301e7b38f32bdc9a6bdae6f5921a55f0a1eb9450e1e6515645dbb2"
+      sha256: "29f7ecc274a86d32920b1d9cfc7502fa87220da41ec60b55f329559d5732e2b2"
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.6"
+    version: "3.1.7"
   ffi:
     dependency: transitive
     description:
@@ -109,10 +109,10 @@ packages:
     dependency: "direct dev"
     description:
       name: leancode_lint
-      sha256: "40afb0d660f813edeffeb96fbfe8f9170d029bc7b483618867087796821333bc"
+      sha256: "717cbf99e9a75bc853b0dba6ffea6bc9f596dd6890ac9fae29d0e9f65ee5e652"
       url: "https://pub.dev"
     source: hosted
-    version: "21.0.0+1"
+    version: "22.0.0"
   meta:
     dependency: transitive
     description:
@@ -181,10 +181,10 @@ packages:
     dependency: "direct main"
     description:
       name: usb_gadget
-      sha256: "6ec27f8dd16ab5715792679253365dbc8d32b375059f9dedbcaa6cab9b9111fb"
+      sha256: "94fb2f02e07979db647029f66a6b436810d20723ffac482309d2a7eea1b8e446"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.0"
+    version: "0.6.0"
   using:
     dependency: transitive
     description:
