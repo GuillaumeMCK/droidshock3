@@ -17,7 +17,7 @@ import 'reports/output_report.dart';
     idProduct: 0x0268,
     deviceProtocol: .none,
     deviceSubClass: .none,
-    deviceClass: .composite,
+    deviceClass: .perInterface,
     strings: {
       .enUS: .new(
         manufacturer: 'Sony Computer Entertainment Inc.',
