@@ -442,7 +442,7 @@ final class FeatureReport with USBGadgetLogger {
       ..setAll(12, serialNumber.toBytes(4, .little))
       ..[16] = pcbRevision
       ..setAll(17, flashBankA.sublist(0x6C, 0x8B));
-    log?.info('F2 device information report ${response.xxd()}');
+    log?.debug('F2 device information report ${response.xxd()}');
     return response;
   }
 
@@ -468,7 +468,7 @@ final class FeatureReport with USBGadgetLogger {
       ..setAll(0xC, serialNumber.toBytes(4, .little))
       ..[16] = pcbRevision
       ..setAll(17, flashBankA.sublist(0x6C, 0x8B));
-    log?.info('F5 pairing information report ${r.xxd()}');
+    log?.debug('F5 pairing information report ${r.xxd()}');
     return r;
   }
 
@@ -483,7 +483,7 @@ final class FeatureReport with USBGadgetLogger {
   /// Throws [RangeError] if data is too short to contain a MAC address.
   void setF5(Uint8List data) {
     pairedMac.setRange(0, 6, data.sublist(2, 8));
-    log?.success(
+    log?.info(
       'F5 Paired host MAC address to: '
       '${pairedMac.map((b) => b.toHex(prefix: false, padding: 2)).join(':')}'
       '${data.xxd()}',
@@ -522,7 +522,7 @@ final class FeatureReport with USBGadgetLogger {
 
   void setEF(Uint8List data) {
     state.setRange(0, 4, data.sublist(4, 8));
-    log?.info('EF report updated from data: ${data.xxd()}');
+    log?.debug('EF report updated from data: ${data.xxd()}');
   }
 
   /// Returns an **F7 – Sensor Configuration** feature report.
@@ -539,7 +539,7 @@ final class FeatureReport with USBGadgetLogger {
       ..[0x7] = 0xFF
       ..setAll(0x11, flashBankA.sublist(0x8C, 0x8C + 20))
       ..[0x30] = 0x5;
-    log?.info('F7 sensor configuration report: ${response.xxd()}');
+    log?.debug('F7 sensor configuration report: ${response.xxd()}');
     return response;
   }
 
@@ -564,7 +564,7 @@ final class FeatureReport with USBGadgetLogger {
       ..setAll(5, state)
       ..setAll(0x11, flashBankB.sublist(state[2], state[2] + 0x10))
       ..[0x30] = 0x5;
-    log?.info('F8 sensor status report ${response.xxd()}');
+    log?.debug('F8 sensor status report ${response.xxd()}');
     return response;
   }
 
@@ -581,7 +581,7 @@ final class FeatureReport with USBGadgetLogger {
   ///
   /// Throws [ArgumentError] if data is too short.
   void setF1(Uint8List data) {
-    log?.info('Received F1 flash access command: ${data.xxd()}');
+    log?.debug('Received F1 flash access command: ${data.xxd()}');
 
     switch (FlashCommand.fromByte(data[1])) {
       case .setAddress:
@@ -633,7 +633,7 @@ final class FeatureReport with USBGadgetLogger {
   /// Constructs a **01 – Controller Information** feature report.
   ///
   Uint8List get01() {
-    log?.info('01 controller information report');
+    log?.debug('01 controller information report');
     final response = Uint8List(64)
       ..[0] = 0x00
       ..[1] = 0x01
@@ -648,21 +648,21 @@ final class FeatureReport with USBGadgetLogger {
   /// Commands are encoded as `[0x42, <command_byte>]` where 0x42 is the
   /// required command prefix.
   void setF4(Uint8List data) {
-    log?.info('Received F4 controller control command: ${data.xxd()}');
+    log?.debug('Received F4 controller control command: ${data.xxd()}');
     switch (F4Command.fromByte(data[1])) {
       case .enableInputStreaming:
       case .startupController:
-        log?.success('Enabling input streaming');
+        log?.info('Enabling input streaming');
         state[1] = 0x01;
       case .disableInputStreaming:
-        log?.success('Disabling input streaming');
+        log?.info('Disabling input streaming');
         state[1] = 0x00;
       case .enableOutputMotionSensors:
-        log?.success('Enabling output streaming');
+        log?.info('Enabling output streaming');
         state[1] = 0x03;
       case .restartController:
       case .shutdownController:
-        log?.success('Resetting controller state');
+        log?.info('Resetting controller state');
         state
           ..[0] = 0x00
           ..[1] = 0x00

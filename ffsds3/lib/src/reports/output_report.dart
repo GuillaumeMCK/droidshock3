@@ -92,7 +92,7 @@ final class OutputReport with USBGadgetLogger {
       throw ArgumentError('Output report must be exactly 48 bytes');
     }
     bytes.setAll(0, newBytes);
-    log?.info('Output report updated: $this');
+    log?.debug('Output report updated: $this');
   }
 
   // ---------------------------------------------------------------------------

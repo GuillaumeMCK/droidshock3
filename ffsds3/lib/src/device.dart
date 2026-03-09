@@ -81,7 +81,6 @@ final class Dualshock3 extends HIDFunctionFs {
   @override
   Future<void> onEnable() async {
     super.onEnable();
-    log?.info('Controller configured by host');
     _epInTimer ??= .periodic(config.reportInterval, (_) {
       if (features.inputStreamingEnabled && state == .enabled) {
         epIn.write(input.bytes);
@@ -106,7 +105,6 @@ final class Dualshock3 extends HIDFunctionFs {
 
   @override
   Uint8List onGetReport(HIDReportType type, int reportId) {
-    log?.debug('GET_REPORT: type=${type.name}, id=${reportId.toHex()}');
     return switch ((type, reportId)) {
       (.input, 0x01) => input.bytes,
       (.feature, 0x01) => features.get01(),
@@ -124,10 +122,6 @@ final class Dualshock3 extends HIDFunctionFs {
 
   @override
   void onSetReport(HIDReportType type, int reportId, Uint8List data) {
-    log?.debug(
-      'SET_REPORT: type=${type.name}, id=${reportId.toHex()}, '
-      'len=${data.length}',
-    );
     return switch ((type, reportId)) {
       (.output, 0x01) => output.update(data),
       (.feature, 0xEF) => features.setEF(data),
