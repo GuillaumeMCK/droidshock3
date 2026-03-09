@@ -18,7 +18,6 @@ Future<void> main() async {
     await ProcessSignal.sigint.watch().first;
   } catch (e, st) {
     stderr.writeln('ERROR: $e\n$st');
-    exit(1);
   } finally {
     await stdinSubscription?.cancel();
     await gadget.unbind();
