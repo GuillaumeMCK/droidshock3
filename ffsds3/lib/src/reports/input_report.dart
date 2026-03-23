@@ -45,7 +45,7 @@ library;
 import 'dart:typed_data';
 import 'package:usb_gadget/usb_gadget.dart';
 
-import '../inputs.dart';
+import '../board/board.dart';
 
 /// DualShock 3 Input Report (Sent to Host)
 final class InputReport {

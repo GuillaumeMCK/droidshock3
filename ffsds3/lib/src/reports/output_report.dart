@@ -95,10 +95,6 @@ final class OutputReport with USBGadgetLogger {
     log?.debug('Output report updated: $this');
   }
 
-  // ---------------------------------------------------------------------------
-  // Rumble
-  // ---------------------------------------------------------------------------
-
   /// Right (small/weak) motor duration [0-255], in ~10 ms units.
   /// Motor fires only when both duration > 0 AND power > 0.
   int get rumbleRightDuration => bytes[1];
@@ -123,10 +119,6 @@ final class OutputReport with USBGadgetLogger {
   /// Whether the left (strong) motor is currently active.
   bool get isLeftMotorActive => rumbleLeftDuration > 0 && rumbleLeftPower > 0;
 
-  // ---------------------------------------------------------------------------
-  // LED flag mask (byte 9)
-  // ---------------------------------------------------------------------------
-
   /// Raw LED flag byte (byte 9).
   /// Bits 1-4 correspond to LEDs 1-4; other bits are reserved.
   /// Common PS3 values: 0x02=P1, 0x04=P2, 0x08=P3, 0x10=P4, 0xFF=all.
@@ -143,10 +135,6 @@ final class OutputReport with USBGadgetLogger {
     ledMask.bitFlag(2),
     ledMask.bitFlag(3),
   ];
-
-  // ---------------------------------------------------------------------------
-  // LED blink patterns (bytes 0x0A–0x1D, 5 bytes × 4 LEDs)
-  // ---------------------------------------------------------------------------
 
   /// Returns the [LedPattern] for the given [ledIndex] (0 = LED1 … 3 = LED4).
   LedPattern ledPattern(int ledIndex) {

@@ -113,14 +113,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "22.0.0"
+  lints:
+    dependency: "direct dev"
+    description:
+      name: lints
+      sha256: "12f842a479589fea194fe5c5a3095abc7be0c1f2ddfa9a0e76aed1dbd26a87df"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.1.0"
   meta:
     dependency: transitive
     description:
       name: meta
-      sha256: "9f29b9bcc8ee287b1a31e0d01be0eae99a930dbffdaecf04b3f3d82a969f296f"
+      sha256: df0c643f44ad098eb37988027a8e2b2b5a031fd3977f06bbfd3a76637e8df739
       url: "https://pub.dev"
     source: hosted
-    version: "1.18.1"
+    version: "1.18.2"
   package_config:
     dependency: transitive
     description:
@@ -181,10 +189,10 @@ packages:
     dependency: "direct main"
     description:
       name: usb_gadget
-      sha256: "94fb2f02e07979db647029f66a6b436810d20723ffac482309d2a7eea1b8e446"
+      sha256: "6eea523dbe8d7827891b14b16232ccc60d9d149e9238ae514d34e319fd67c35d"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.0"
+    version: "1.0.1"
   using:
     dependency: transitive
     description:

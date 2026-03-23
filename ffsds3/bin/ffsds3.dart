@@ -9,8 +9,9 @@ Future<void> main() async {
 
   StreamSubscription<void>? stdinSubscription;
   try {
-    await gadget.bind();
-    await gadget.awaitState(.configured, timeout: const .new(seconds: 30));
+    final reg = await gadget.register();
+    reg.bind(defaultUDC);
+    await reg.udc?.awaitState(.configured);
     stdout.writeln(
       'Commands: ps, cross, square, circle, triangle, start, quit',
     );
@@ -20,7 +21,7 @@ Future<void> main() async {
     stderr.writeln('ERROR: $e\n$st');
   } finally {
     await stdinSubscription?.cancel();
-    await gadget.unbind();
+    await gadget.remove();
   }
 }
 

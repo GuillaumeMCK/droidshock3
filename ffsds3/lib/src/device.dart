@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:usb_gadget/usb_gadget.dart';
 
+import 'board/board.dart';
 import 'reports/feature_reports.dart';
 import 'reports/input_report.dart';
 import 'reports/output_report.dart';
@@ -13,11 +14,8 @@ import 'reports/output_report.dart';
   final dualshock3 = Dualshock3();
   final gadget = Gadget(
     name: name,
-    idVendor: 0x054C,
-    idProduct: 0x0268,
-    deviceProtocol: .none,
-    deviceSubClass: .none,
-    deviceClass: .perInterface,
+    id: Id(vendor: 0x054C, product: 0x0268),
+    class_: .interfaceSpecific(),
     strings: {
       .enUS: .new(
         manufacturer: 'Sony Computer Entertainment Inc.',
@@ -25,25 +23,33 @@ import 'reports/output_report.dart';
         serialnumber: 'SN00000000',
       ),
     },
-    config: .new(
-      attributes: .busPowered,
-      maxPower: .fromMilliAmps(500),
-      functions: [dualshock3],
-    ),
+    configs: [
+      .new(
+        description: 'DualShock 3',
+        selfPowered: true,
+        remoteWakeup: true,
+        maxPower: .new(500),
+        functions: [dualshock3],
+      ),
+    ],
   );
   return (gadget, dualshock3);
 }
 
 /// Emulates a Sony DualShock 3 controller using FunctionFS.
-final class Dualshock3 extends HIDFunctionFs {
-  Dualshock3({List<int>? deviceMac, List<int>? pairedMac, int? serialNumber})
-    : input = InputReport(),
-      output = OutputReport(),
-      features = FeatureReport(
-        deviceMac: deviceMac ?? const [0x9E, 0xE8, 0x28, 0x31, 0xC7, 0x33],
-        pairedMac: pairedMac ?? const [0x90, 0x34, 0xFC, 0xA5, 0xE5, 0x0B],
-        serialNumber: serialNumber ?? 0x01D88151,
+final class Dualshock3 extends HIDFunctionFs implements Board {
+  Dualshock3({List<int>? deviceAddr, List<int>? pairedAddr, int? serialnumber})
+    : eeprom = Eeprom(),
+      revision = 0x8A,
+      serialnumber = serialnumber ?? 0x01D88151,
+      deviceAddr = .fromList(
+        deviceAddr ?? [0x9E, 0xE8, 0x28, 0x31, 0xC7, 0x33],
       ),
+      pairedAddr = .fromList(
+        pairedAddr ?? [0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+      ),
+      input = InputReport(),
+      output = OutputReport(),
       super(
         name: 'dualshock3',
         reportDescriptor: .fromList([
@@ -63,29 +69,43 @@ final class Dualshock3 extends HIDFunctionFs {
           0x01, 0xB1, 0x02, 0xC0, 0xC0, //
         ]),
         speeds: {.fullSpeed, .highSpeed},
-        subclass: .none,
-        protocol: .none,
         config: const .bidirectional(
-          pollInterval: .new(milliseconds: 10),
-          reportInterval: .new(milliseconds: 10),
+          pollInterval: .new(milliseconds: 1),
+          reportInterval: .new(milliseconds: 1),
         ),
-      );
+      ) {
+    features = FeatureReport(this);
+  }
+
+  @override
+  final Uint8List deviceAddr;
+
+  @override
+  final Uint8List pairedAddr;
+
+  @override
+  final Eeprom eeprom;
+
+  @override
+  final int revision;
+
+  @override
+  final int serialnumber;
 
   final InputReport input;
-  final FeatureReport features;
   final OutputReport output;
+  late final FeatureReport features;
 
-  Timer? _epInTimer;
+  StreamSubscription<int>? _epInSub;
   StreamSubscription<Uint8List>? _epOutSub;
 
   @override
   Future<void> onEnable() async {
     super.onEnable();
-    _epInTimer ??= .periodic(config.reportInterval, (_) {
-      if (features.inputStreamingEnabled && state == .enabled) {
-        epIn.write(input.bytes);
-      }
-    });
+    _epInSub ??= epIn.writeWhile(
+      condition: () => features.inputStreamingEnabled && state == .enabled,
+      data: () => input.bytes,
+    );
     _epOutSub ??= epOut.stream.listen(
       (bytes) => switch (bytes) {
         [0x01, ...final data] when data.length == 48 => output.update(data),
@@ -95,11 +115,18 @@ final class Dualshock3 extends HIDFunctionFs {
   }
 
   @override
-  Future<void> release() async {
-    _epInTimer?.cancel();
-    _epInTimer = null;
-    await _epOutSub?.cancel();
+  Future<void> onDisable() async {
+    await release(partial: true);
+    super.onDisable();
+  }
+
+  @override
+  Future<void> release({bool partial = false}) async {
+    if (isReleased) return;
+    await [?_epOutSub?.cancel(), ?_epOutSub?.cancel()].wait;
     _epOutSub = null;
+    _epInSub = null;
+    if (partial) return;
     await super.release();
   }
 
@@ -107,13 +134,13 @@ final class Dualshock3 extends HIDFunctionFs {
   Uint8List onGetReport(HIDReportType type, int reportId) {
     return switch ((type, reportId)) {
       (.input, 0x01) => input.bytes,
-      (.feature, 0x01) => features.get01(),
-      (.feature, 0xF1) => features.getF1(),
-      (.feature, 0xF2) => features.getF2(),
-      (.feature, 0xF5) => features.getF5(),
-      (.feature, 0xEF) => features.getEF(),
-      (.feature, 0xF8) => features.getF8(),
-      (.feature, 0xF7) => features.getF7(),
+      (.feature, 0x01) => features.getControllerInfo(),
+      (.feature, 0xF1) => features.getEepromBlock(),
+      (.feature, 0xF2) => features.getDeviceInfo(),
+      (.feature, 0xF5) => features.getPairingInfo(),
+      (.feature, 0xEF) => features.getSensorConfig(),
+      (.feature, 0xF7) => features.getSensorParameters(),
+      (.feature, 0xF8) => features.getSensorStatus(),
       _ => throw UnsupportedError(
         'Unhandled GET_REPORT: type=${type.name}, id=${reportId.toHex()}',
       ),
@@ -124,10 +151,10 @@ final class Dualshock3 extends HIDFunctionFs {
   void onSetReport(HIDReportType type, int reportId, Uint8List data) {
     return switch ((type, reportId)) {
       (.output, 0x01) => output.update(data),
-      (.feature, 0xEF) => features.setEF(data),
-      (.feature, 0xF1) => features.setF1(data),
-      (.feature, 0xF4) => features.setF4(data),
-      (.feature, 0xF5) => features.setF5(data),
+      (.feature, 0xEF) => features.setSensorState(data),
+      (.feature, 0xF1) => features.setEepromAccess(data),
+      (.feature, 0xF4) => features.handleCommand(data),
+      (.feature, 0xF5) => features.setPairedHost(data),
       _ => throw UnsupportedError(
         'Unhandled SET_REPORT: type=${type.name}, id=${reportId.toHex()}',
       ),
