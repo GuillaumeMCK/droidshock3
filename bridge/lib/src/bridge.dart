@@ -27,11 +27,11 @@ final class Ds3Bridge with Releasable, BridgeLogger {
     final (gadget, ds3) = createDualshock3();
     try {
       server = await RawServerSocket.bind(InternetAddress.anyIPv4, 0);
-      await gadget.bind();
+      await gadget.register().then((reg) => reg.bind(defaultUDC));
       return Ds3Bridge._(server, gadget, ds3);
     } catch (_) {
       await server.close();
-      await gadget.unbind();
+      await gadget.remove();
       rethrow;
     }
   }
@@ -89,7 +89,7 @@ final class Ds3Bridge with Releasable, BridgeLogger {
     _session = null;
 
     await _server.close();
-    await _gadget.unbind();
+    await _gadget.remove();
     _released.complete();
   }
 }
