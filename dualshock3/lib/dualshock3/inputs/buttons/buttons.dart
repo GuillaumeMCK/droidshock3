@@ -94,7 +94,7 @@ final class SquareButton extends _Button {
 final class PSButton extends _Button {
   PSButton({super.key, required super.size, required super.onPressed})
     : super(
-        child: Icon(LucideIcons.house, size: (size ?? 0) / 2),
+        child: Icon(LucideIcons.house300, size: (size ?? 0) / 2),
         padding: const .all(2),
       );
 
