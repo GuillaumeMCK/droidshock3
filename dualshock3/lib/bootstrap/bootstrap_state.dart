@@ -17,6 +17,8 @@ final class BootstrapLoading extends BootstrapState {
   const BootstrapLoading({this.currentTask, required this.step});
 
   final String? currentTask;
+
+  @override
   final int step;
 }
 

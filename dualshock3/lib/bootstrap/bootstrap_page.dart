@@ -10,69 +10,97 @@ class BootstrapPage extends HookWidget {
   Widget build(BuildContext context) {
     final ShadThemeData(:colorScheme, :textTheme) = context.theme;
     final state = useBlocState(getIt<BootstrapCubit>());
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 300),
-        child: switch (state) {
-          BootstrapLoading(:final step, :final currentTask) => Column(
-            spacing: 16,
+    return Container(
+      alignment: .center,
+      color: colorScheme.background,
+      child: switch (state) {
+        BootstrapLoading() => _LoadingScreen(state),
+        BootstrapError() => _ErrorScreen(state),
+        _ => const SizedBox.shrink(),
+      },
+    );
+  }
+}
+
+final class _LoadingScreen extends StatelessWidget {
+  const _LoadingScreen(this.state);
+
+  final BootstrapLoading state;
+
+  @override
+  Widget build(BuildContext context) {
+    final ShadThemeData(:colorScheme, :textTheme) = context.theme;
+    final BootstrapLoading(:step, :currentTask) = state;
+    return Container(
+      alignment: .center,
+      margin: .symmetric(horizontal: 24),
+      child: Column(
+        spacing: 16,
+        mainAxisAlignment: .center,
+        children: [
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: null, end: step / BootstrapCubit.steps),
+            duration: 250.ms,
+            curve: Curves.easeInOut,
+            builder: (_, value, _) => Text(
+              'DROIDSHOCK 3',
+              style: textTheme.p.extraBold.noHeight
+                  .withColor(colorScheme.primary)
+                  .withAlpha(value * 255),
+            ),
+          ),
+          Text('$currentTask', style: textTheme.xxs.withAlpha(127)),
+        ],
+      ),
+    );
+  }
+}
+
+final class _ErrorScreen extends StatelessWidget {
+  const _ErrorScreen(this.state);
+
+  final BootstrapError state;
+
+  @override
+  Widget build(BuildContext context) {
+    final ShadThemeData(:colorScheme, :textTheme) = context.theme;
+    final BootstrapError(:task, :err, :stackTrace) = state;
+    return Container(
+      alignment: .center,
+      padding: .symmetric(horizontal: 24),
+      child: Column(
+        spacing: 16,
+        mainAxisSize: .min,
+        children: [
+          Row(
             mainAxisSize: .min,
+            spacing: 8,
             children: [
-              TweenAnimationBuilder<double>(
-                tween: Tween<double>(
-                  begin: 0,
-                  end: step / BootstrapCubit.steps,
-                ),
-                duration: 100.ms,
-                curve: Effects.engagingCurve,
-                builder: (_, value, _) => ShadProgress(
-                  color: colorScheme.primary.shiftBrightness(),
-                  minHeight: 3,
-                  value: value,
-                ),
+              Icon(
+                LucideIcons.octagonAlert,
+                color: colorScheme.error,
+                size: 16,
               ),
-              Text('$currentTask', style: textTheme.muted.sm),
+              Text('Bootstrap failed [$task]', style: textTheme.small.medium),
             ],
           ),
-          BootstrapError(:final task, :final err, :final stackTrace) => Column(
-            spacing: 16,
-            mainAxisSize: .min,
+          Text('$err', style: textTheme.muted.xs),
+          ShadAccordion<String>(
             children: [
-              Row(
-                mainAxisSize: .min,
-                spacing: 8,
-                children: [
-                  Icon(
-                    LucideIcons.octagonAlert,
-                    color: colorScheme.error,
-                    size: 16,
+              ShadAccordionItem(
+                value: 'stackTrace',
+                title: Text('Stack Trace', style: textTheme.small.medium),
+                separator: const SizedBox.shrink(),
+                child: ConstrainedBox(
+                  constraints: .new(maxHeight: 300, maxWidth: 400),
+                  child: SingleChildScrollView(
+                    child: Text('$stackTrace', style: textTheme.muted.xs),
                   ),
-                  Text(
-                    'Bootstrap failed [$task]',
-                    style: textTheme.small.medium,
-                  ),
-                ],
-              ),
-              Text('$err', style: textTheme.muted.xs),
-              ShadAccordion<String>(
-                children: [
-                  ShadAccordionItem(
-                    value: 'stackTrace',
-                    title: Text('Stack Trace', style: textTheme.small.medium),
-                    separator: const SizedBox.shrink(),
-                    child: ConstrainedBox(
-                      constraints: .new(maxHeight: 300, maxWidth: 400),
-                      child: SingleChildScrollView(
-                        child: Text('$stackTrace', style: textTheme.muted.xs),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
-          _ => const SizedBox.shrink(),
-        },
+        ],
       ),
     );
   }
