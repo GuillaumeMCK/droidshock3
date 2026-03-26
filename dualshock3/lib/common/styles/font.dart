@@ -73,6 +73,8 @@ extension TextStyleX on TextStyle {
 
   TextStyle get bold => copyWith(fontWeight: FontWeight.w700);
 
+  TextStyle get extraBold => copyWith(fontWeight: FontWeight.w900);
+
   TextStyle get underline => copyWith(decoration: TextDecoration.underline);
 
   TextStyle get strike => copyWith(decoration: TextDecoration.lineThrough);
@@ -85,5 +87,14 @@ extension TextStyleX on TextStyle {
 
   TextStyle get xxs => copyWith(fontSize: 12, height: 1);
 
-  TextStyle get faint => copyWith(color: color?.withAlpha(60));
+  TextStyle withColor(Color color) => copyWith(color: color);
+
+  TextStyle get white => withColor(const Color(0xFFFFFFFF));
+
+  TextStyle get black => withColor(const Color(0xFF000000));
+
+  TextStyle get noHeight => copyWith(height: 0);
+
+  TextStyle withAlpha(num alpha) =>
+      copyWith(color: color?.withAlpha(alpha.toInt()));
 }

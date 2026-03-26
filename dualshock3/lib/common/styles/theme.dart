@@ -2,17 +2,13 @@ import '/common/common.dart';
 
 export 'package:shadcn_ui/shadcn_ui.dart';
 
-const ShadStoneColorScheme _lightTheme = .light();
-const ShadStoneColorScheme _darkTheme = .dark();
-
 final ShadThemeData lightTheme = _themeData(false);
 final ShadThemeData darkTheme = _themeData(true);
 
-const Color _primary = Color(0xFF0043C9);
-
 ShadThemeData _themeData(bool isDark) {
-  final theme = isDark ? _darkTheme : _lightTheme;
-  final secondary = Color.lerp(theme.secondary, _primary, .01);
+  final ShadStoneColorScheme theme = isDark ? .dark() : .light();
+  final primary = Color(0xFF1C6FE0);
+  final secondary = Color.lerp(theme.secondary, primary, .01);
   final input = isDark ? const Color(0xFF2D2D2D) : const Color(0xFFFFFFFF);
   final background = isDark ? const Color(0xFF000000) : const Color(0xFFF9F9F9);
   final adaptative = input.shiftLightness(
@@ -20,24 +16,24 @@ ShadThemeData _themeData(bool isDark) {
     lightAmount: isDark ? .15 : -.05,
   );
   final colorScheme = theme.copyWith(
-    primary: _primary,
+    primary: primary,
     background: background,
     secondary: secondary,
     input: input,
     popover: input,
-    popoverForeground: .lerp(theme.popoverForeground, _primary, .01),
+    popoverForeground: .lerp(theme.popoverForeground, primary, .01),
     card: adaptative,
-    cardForeground: .lerp(theme.cardForeground, _primary, .01),
-    ring: .lerp(theme.ring, _primary, .1)!.alphaFaint,
-    foreground: .lerp(theme.foreground, _primary, .01)!.withAlpha(225),
+    cardForeground: .lerp(theme.cardForeground, primary, .01),
+    ring: .lerp(theme.ring, primary, .1)!.alphaFaint,
+    foreground: .lerp(theme.foreground, primary, .01)!.withAlpha(225),
     destructive: const Color(0xFFE00004),
     destructiveForeground: const Color(0xFFFFDDDD),
-    accent: .lerp(theme.accent, _primary, .01),
-    accentForeground: .lerp(theme.accentForeground, _primary, .01),
-    muted: .lerp(theme.muted, _primary, .01),
+    accent: .lerp(theme.accent, primary, .01),
+    accentForeground: .lerp(theme.accentForeground, primary, .01),
+    muted: .lerp(theme.muted, primary, .01)?.shiftLightness(),
     mutedForeground: theme.mutedForeground.withAlpha(225),
-    selection: _primary.withAlpha(isDark ? 75 : 40),
-    border: isDark ? const Color(0xFF2A2B2F) : const Color(0xFFEAEAEC),
+    selection: primary.withAlpha(isDark ? 75 : 40),
+    border: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFEAEAEA),
   );
   return ShadThemeData(
     brightness: isDark ? .dark : .light,
@@ -63,8 +59,8 @@ ShadThemeData _themeData(bool isDark) {
     ),
     buttonSizesTheme: _buttonsSizes,
     primaryButtonTheme: ShadButtonTheme(
-      backgroundColor: _primary,
-      pressedBackgroundColor: _primary.shiftLightness(),
+      backgroundColor: primary,
+      pressedBackgroundColor: primary.shiftLightness(),
       foregroundColor: Color(0xFFFAFAFA),
       hoverForegroundColor: Color(0xFFFFFFFF),
       decoration: _buttonsDecoration,
@@ -79,6 +75,15 @@ ShadThemeData _themeData(bool isDark) {
     secondaryButtonTheme: ShadButtonTheme(
       backgroundColor: secondary,
       pressedBackgroundColor: theme.background,
+      foregroundColor: colorScheme.mutedForeground,
+      hoverForegroundColor: colorScheme.foreground,
+      decoration: _buttonsDecoration.merge(
+        ShadDecoration(border: .all(color: colorScheme.border, width: .5)),
+      ),
+    ),
+    outlineButtonTheme: ShadButtonTheme(
+      backgroundColor: colorScheme.card,
+      pressedBackgroundColor: colorScheme.card.darker,
       foregroundColor: colorScheme.mutedForeground,
       hoverForegroundColor: colorScheme.foreground,
       decoration: _buttonsDecoration.merge(
