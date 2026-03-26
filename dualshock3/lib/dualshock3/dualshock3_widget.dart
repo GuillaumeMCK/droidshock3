@@ -27,7 +27,6 @@ class RightPad extends StatelessWidget {
         SizedBox.square(
           dimension: size * 3,
           child: Stack(
-            clipBehavior: .none,
             children: [
               Align(
                 alignment: .topCenter,
@@ -79,8 +78,6 @@ class LeftPad extends StatelessWidget {
               Align(
                 alignment: .topCenter,
                 child: DirectionButton.down(
-                  color: colorScheme.background,
-                  borderColor: colorScheme.muted,
                   size: size,
                   onPressed: (isPressed) {},
                 ),
@@ -88,8 +85,6 @@ class LeftPad extends StatelessWidget {
               Align(
                 alignment: .centerLeft,
                 child: DirectionButton.right(
-                  color: colorScheme.background,
-                  borderColor: colorScheme.muted,
                   size: size,
                   onPressed: (isPressed) {},
                 ),
@@ -97,8 +92,6 @@ class LeftPad extends StatelessWidget {
               Align(
                 alignment: .centerRight,
                 child: DirectionButton.left(
-                  color: colorScheme.background,
-                  borderColor: colorScheme.muted,
                   size: size,
                   onPressed: (isPressed) {},
                 ),
@@ -106,8 +99,6 @@ class LeftPad extends StatelessWidget {
               Align(
                 alignment: .bottomCenter,
                 child: DirectionButton.up(
-                  color: colorScheme.background,
-                  borderColor: colorScheme.muted,
                   size: size,
                   onPressed: (isPressed) {},
                 ),

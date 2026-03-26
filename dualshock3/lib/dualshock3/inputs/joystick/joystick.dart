@@ -91,13 +91,13 @@ final class _Knob extends StatelessWidget {
       dimension: knobSize / 1.5,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: colorScheme.background,
-          shape: .circle,
+          color: colorScheme.ds3Bg,
+          borderRadius: .circular(knobSize / 2),
         ),
         child: Icon(
           LucideIcons.target200,
           size: knobSize / 1.8,
-          color: isPressed ? colorScheme.mutedForeground : colorScheme.muted,
+          color: isPressed ? Color(0xFFFFFFFF) : colorScheme.ds3Fg,
         ),
       ),
     );
@@ -112,7 +112,7 @@ class _Circle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ShadThemeData(:colorScheme) = context.theme;
-    final color = colorScheme.border;
+    final color = colorScheme.ds3Border;
     return Container(
       width: size,
       height: size,

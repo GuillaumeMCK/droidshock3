@@ -9,12 +9,14 @@ base class _Button extends HookWidget {
     super.key,
     required this.size,
     required this.onPressed,
-    required this.child,
+    this.child,
+    this.builder,
     this.padding = const EdgeInsets.all(4),
     this.decoration,
   });
 
-  final Widget child;
+  final Widget? child;
+  final WidgetBuilder? builder;
   final double? size;
   final ButtonCallBack onPressed;
   final EdgeInsets padding;
@@ -52,11 +54,11 @@ base class _Button extends HookWidget {
         decoration:
             decoration ??
             BoxDecoration(
-              color: colorScheme.background,
-              border: .all(color: colorScheme.muted, width: 1),
+              color: colorScheme.ds3Bg,
+              border: .all(color: colorScheme.ds3Border, width: 1),
               borderRadius: .circular(size ?? 8 / 2),
             ),
-        child: child,
+        child: child ?? builder?.call(context) ?? SizedBox.shrink(),
       ).animate(controller: ctrl, autoPlay: false).scale(end: Offset(.9, .9)),
     );
   }
@@ -101,7 +103,7 @@ final class PSButton extends _Button {
   @override
   Widget build(BuildContext context) {
     return IconTheme(
-      data: IconThemeData(color: context.theme.colorScheme.mutedForeground),
+      data: IconThemeData(color: context.theme.colorScheme.ds3Fg),
       child: super.build(context),
     );
   }
@@ -185,74 +187,38 @@ final class DirectionButton extends _Button {
   DirectionButton({
     super.key,
     required this.direction,
-    required this.color,
-    required this.borderColor,
     required super.size,
     required super.onPressed,
   }) : super(
          decoration: const BoxDecoration(),
-         child: CustomPaint(
+         builder: (context) => CustomPaint(
            painter: DS3DirectionPainter(
              direction: direction,
-             color: color,
-             borderColor: borderColor,
+             color: context.colorScheme.ds3Bg,
+             borderColor: context.colorScheme.ds3Border,
            ),
          ),
        );
 
   factory DirectionButton.up({
-    required Color color,
-    required Color borderColor,
     required double size,
     required ButtonCallBack onPressed,
-  }) => DirectionButton(
-    direction: .up,
-    color: color,
-    borderColor: borderColor,
-    size: size,
-    onPressed: onPressed,
-  );
+  }) => DirectionButton(direction: .up, size: size, onPressed: onPressed);
 
   factory DirectionButton.down({
-    required Color color,
-    required Color borderColor,
     required double size,
     required ButtonCallBack onPressed,
-  }) => DirectionButton(
-    direction: .down,
-    color: color,
-    borderColor: borderColor,
-    size: size,
-    onPressed: onPressed,
-  );
+  }) => DirectionButton(direction: .down, size: size, onPressed: onPressed);
 
   factory DirectionButton.left({
-    required Color color,
-    required Color borderColor,
     required double size,
     required ButtonCallBack onPressed,
-  }) => DirectionButton(
-    direction: .left,
-    color: color,
-    borderColor: borderColor,
-    size: size,
-    onPressed: onPressed,
-  );
+  }) => DirectionButton(direction: .left, size: size, onPressed: onPressed);
 
   factory DirectionButton.right({
-    required Color color,
-    required Color borderColor,
     required double size,
     required ButtonCallBack onPressed,
-  }) => DirectionButton(
-    direction: .right,
-    color: color,
-    borderColor: borderColor,
-    size: size,
-    onPressed: onPressed,
-  );
+  }) => DirectionButton(direction: .right, size: size, onPressed: onPressed);
 
   final DS3Direction direction;
-  final Color color;
-  final Color borderColor;
 }

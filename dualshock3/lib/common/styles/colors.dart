@@ -27,6 +27,12 @@ extension ColorX on Color {
 extension ShadColorSchemeX on ShadColorScheme {
   Color get transparent => const Color(0x00000000);
 
+  Color get ds3Bg => custom['ds3Bg']!;
+
+  Color get ds3Border => custom['ds3Border']!;
+
+  Color get ds3Fg => custom['ds3Fg']!;
+
   Color get shadow => const Color(0x05000000);
 
   Color get success => Color.lerp(const Color(0xFF17C964), foreground, .1)!;

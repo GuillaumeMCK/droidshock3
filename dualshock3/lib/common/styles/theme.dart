@@ -34,6 +34,11 @@ ShadThemeData _themeData(bool isDark) {
     mutedForeground: theme.mutedForeground.withAlpha(225),
     selection: primary.withAlpha(isDark ? 75 : 40),
     border: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFEAEAEA),
+    custom: {
+      'ds3Bg': isDark ? const Color(0xFF000000) : const Color(0xFF191919),
+      'ds3Border': isDark ? const Color(0xFF2A2A2A) : const Color(0xFF5F5F5F),
+      'ds3Fg': theme.mutedForeground.withAlpha(225),
+    },
   );
   return ShadThemeData(
     brightness: isDark ? .dark : .light,
