@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:dualshock3/bridge/bridge_cubit.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:root_plus/root_plus.dart';
 
 import '/app/app_bloc_observer.dart';
 import '/common/common.dart';
@@ -14,7 +11,6 @@ import '/env.dart';
 
 part 'bootstrap_state.dart';
 
-/// Temporary directory for the app. Initialized during bootstrap.
 late final String fTmpDir;
 
 class BootstrapCubit extends Cubit<BootstrapState> with BootstrapLogger {
@@ -33,7 +29,7 @@ class BootstrapCubit extends Cubit<BootstrapState> with BootstrapLogger {
 
   Future<void> run(VoidCallback runApp, WidgetsBinding widgetsBinding) async {
     if (state is! BootstrapInitial) {
-      return log?.warning('Bootstrap already started');
+      return log?.warn('Bootstrap already started');
     }
     FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
@@ -54,7 +50,7 @@ class BootstrapCubit extends Cubit<BootstrapState> with BootstrapLogger {
     await _initialize('App Behavior', switch (Platform.operatingSystem) {
       'android' => () async {
         await (
-          SystemChrome.setEnabledSystemUIMode(.edgeToEdge),
+          SystemChrome.setEnabledSystemUIMode(.immersiveSticky),
           SystemChrome.setPreferredOrientations([.portraitUp]),
         ).wait;
       },
