@@ -1,11 +1,9 @@
-import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import '../bridge/bridge_cubit.dart';
-import '../gamepads/gamepads_cubit.dart';
-import '/app/app_router.gr.dart';
+import '/bridge/bridge_cubit.dart';
+import '/gamepads/gamepads_cubit.dart';
 import '/bootstrap/bootstrap_cubit.dart';
 import '/common/hooks.dart';
 import '/common/styles/styles.dart';
@@ -13,12 +11,12 @@ import '/injection.dart';
 import '/shared_widgets/utils/no_scroll_behavior.dart';
 import 'app_router.dart';
 import 'app_system_ui.dart';
+import 'app_router.gr.dart';
 
 class AppWidget extends HookWidget {
   const AppWidget({required this.title, super.key});
 
   final String title;
-  static bool replaced = false;
 
   @override
   Widget build(BuildContext context) {
