@@ -9,7 +9,7 @@ part 'gamepads_state.dart';
 @lazySingleton
 class GamepadsCubit extends Cubit<GamepadsState> with AppLogger {
   GamepadsCubit() : super(GamepadsState()) {
-    _pollingTimer = Timer.periodic(const Duration(seconds: 1), (_) async {
+    _pollingTimer = .periodic(const Duration(seconds: 1), (_) async {
       final gamepads = await Gamepads.list();
       _onNewGamepads(gamepads);
     });

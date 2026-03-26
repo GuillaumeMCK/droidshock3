@@ -9,9 +9,9 @@ final class GamepadsState extends Iterable<GamepadController> {
 
   GamepadController? get pair => _paired;
 
-  void set pair(GamepadController? name) => switch (name) {
+  set pair(GamepadController? gamepad) => switch (gamepad) {
     GamepadController(:final id) when _gamepads.containsKey(id) =>
-      _paired = name,
+      _paired = gamepad,
     _ => null,
   };
 
