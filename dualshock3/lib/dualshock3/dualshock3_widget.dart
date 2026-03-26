@@ -129,8 +129,8 @@ class Dualshock3Widget extends StatelessWidget {
     return Padding(
       padding: .symmetric(horizontal: 8),
       child: Column(
+        mainAxisSize: .min,
         children: [
-          Spacer(),
           Row(
             mainAxisAlignment: .spaceBetween,
             children: [
