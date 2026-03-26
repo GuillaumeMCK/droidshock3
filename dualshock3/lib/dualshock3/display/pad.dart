@@ -10,7 +10,7 @@ class Pad extends StatelessWidget {
     return SizedBox.square(
       dimension: dimension,
       child: CustomPaint(
-        painter: _DS3PadPainter(color: context.colorScheme.border.alphaFaint),
+        painter: _DS3PadPainter(color: context.colorScheme.ds3Pad),
       ),
     );
   }
@@ -20,7 +20,7 @@ class _DS3PadPainter extends CustomPainter {
   const _DS3PadPainter({
     required this.color,
     this.armRatio = 0.38,
-    this.cornerRadius = 0.06,
+    this.cornerRadius = 0.05,
   });
 
   final Color color;
