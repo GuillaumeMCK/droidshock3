@@ -1,6 +1,6 @@
-plugins:
+include: package:lints/recommended.yaml
+plugins:plugins:
   leancode_lint:
-    version: ^20.0.0
 
 analyzer:
   errors:
