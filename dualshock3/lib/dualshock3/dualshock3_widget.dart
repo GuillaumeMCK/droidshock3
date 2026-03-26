@@ -19,7 +19,7 @@ class RightPad extends StatelessWidget {
         Positioned.fill(
           child: Joystick(
             size: constraints.maxWidth / 1.5,
-            knobSize: constraints.maxWidth / 8,
+            knobSize: constraints.maxWidth / 7,
             onPressed: (isPressed) => print('double tap $isPressed'),
             onPositionChanged: (position) => print('position $position'),
           ),
@@ -66,7 +66,7 @@ class LeftPad extends StatelessWidget {
         Positioned.fill(
           child: Joystick(
             size: constraints.maxWidth / 1.5,
-            knobSize: constraints.maxWidth / 8,
+            knobSize: constraints.maxWidth / 7,
             onPressed: (isPressed) => print('double tap $isPressed'),
             onPositionChanged: (position) => print('position $position'),
           ),
@@ -128,7 +128,7 @@ class Dualshock3Widget extends StatelessWidget {
               Container(
                 padding: .all(6),
                 decoration: BoxDecoration(
-                  color: colorScheme.border.alphaFaint,
+                  color: colorScheme.ds3Pad,
                   borderRadius: .circular(8),
                 ),
                 child: Column(
@@ -143,7 +143,7 @@ class Dualshock3Widget extends StatelessWidget {
               Container(
                 padding: .all(6),
                 decoration: BoxDecoration(
-                  color: colorScheme.border.alphaFaint,
+                  color: colorScheme.ds3Pad,
                   borderRadius: .circular(8),
                 ),
                 child: Column(
