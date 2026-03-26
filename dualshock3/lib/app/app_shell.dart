@@ -15,7 +15,10 @@ class AppShellPage extends StatelessWidget {
       builder: (context, constraints) => Provider<AppConstraints>.value(
         value: constraints,
         child: FocusScope(
-          child: SafeArea(child: AutoRouter(clipBehavior: .none)),
+          child: ColoredBox(
+            color: context.colorScheme.background,
+            child: AutoRouter(clipBehavior: .none),
+          ),
         ),
       ),
     );
