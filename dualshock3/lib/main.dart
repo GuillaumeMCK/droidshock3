@@ -9,7 +9,7 @@ Future<void> main() {
   debugPaintLayerBordersEnabled = false;
   debugRepaintRainbowEnabled = false;
   return BootstrapCubit().run(
-    () => runApp(const AppWidget(title: "Pocket DS3")),
+    () => runApp(const AppWidget(title: "DroidShock 3")),
     WidgetsFlutterBinding.ensureInitialized(),
   );
 }
