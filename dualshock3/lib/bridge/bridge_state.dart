@@ -26,6 +26,9 @@ final class BridgeState {
     BridgeState() => type == other.type,
     _ => false,
   };
+
+  @override
+  int get hashCode => type.hashCode;
 }
 
 final class BridgeError extends BridgeState implements Exception {

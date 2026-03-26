@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:ffsds3/ffsds3.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:root_plus/root_plus.dart';
 import 'package:bridge/bridge.dart';
 
@@ -26,8 +25,8 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
 
   static const kExePath = '$kBridgeDir/bridge';
 
-  static late final String logPath = '$fTmpDir/bridge.log';
-  static late final String processPath = '$fTmpDir/process';
+  static final String logPath = '$fTmpDir/bridge.log';
+  static final String processPath = '$fTmpDir/process';
 
   void _onOutput(Uint8List data) {
     _buffer.addAll(data);
@@ -71,6 +70,8 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
   
         export LD_LIBRARY_PATH=$kBridgeDir
         nohup $kExePath --process-path $processPath > $logPath 2>&1 &
+        
+        timeout 3 sh -c 'until [ -f $processPath ]; do sleep 0.1; done'
       ''');
     }
     emit(.ready);
@@ -81,7 +82,6 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
       return log?.warn('Start bridge called before setup');
     }
 
-    await Future.delayed(const .new(milliseconds: 100));
     final infos = File(processPath).readAsStringSync();
     if (infos.isEmpty) {
       throw Exception('Failed to start bridge, no process info found');

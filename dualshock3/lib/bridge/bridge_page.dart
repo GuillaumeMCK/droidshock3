@@ -1,9 +1,7 @@
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../shared_widgets/layout/gap.dart';
 import '/common/common.dart';
 import 'bridge_cubit.dart';
 
@@ -18,10 +16,7 @@ class BridgePage extends HookWidget {
       child: Column(
         children: [
           Expanded(child: _BridgeLogView()),
-          Padding(
-            padding: .symmetric(horizontal: 16, vertical: 8),
-            child: _BridgeControls(),
-          ),
+          Padding(padding: .all(16), child: _BridgeControls()),
         ],
       ),
     );
@@ -36,7 +31,7 @@ class _BridgeControls extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final ShadThemeData(:colorScheme, :textTheme) = context.theme;
-    final cubit = useMemoized(context.read<BridgeCubit>);
+    final cubit = context.read<BridgeCubit>();
     final state = useBlocState(cubit);
 
     final pending = useState(_pending);
@@ -61,12 +56,31 @@ class _BridgeControls extends HookWidget {
               '${status.error}\n${status.stackTrace}',
               style: textTheme.muted.xs,
             ),
+            BridgeClosed() => Text(
+              'Bridge is ${state.previousState.type.name.toUpperCase()} and closed.',
+              style: textTheme.muted.sm,
+            ),
             _ => null,
           },
           Row(
             spacing: 8,
             children: [
-              ShadButton(
+              ShadButton.destructive(
+                onPressed: () async {
+                  try {
+                    pending.value = false;
+                    await cubit.shutdown();
+                  } finally {
+                    pending.value = true;
+                  }
+                },
+                leading: Icon(
+                  LucideIcons.powerOff,
+                  color: colorScheme.destructiveForeground,
+                  size: 14,
+                ),
+              ),
+              ShadButton.secondary(
                 enabled: pending.value,
                 onPressed: () async {
                   try {
@@ -78,32 +92,13 @@ class _BridgeControls extends HookWidget {
                     pending.value = true;
                   }
                 },
-                leading: Icon(
-                  LucideIcons.rotateCcw,
-                  color: colorScheme.destructiveForeground,
-                  size: 14,
-                ),
-                child: ShadBadge.destructive(
-                  backgroundColor: colorScheme.card.alphaGhost,
-                  child: Text(state.type.name.toUpperCase()),
+                leading: Icon(LucideIcons.rotateCcw, size: 14),
+                child: Text(
+                  state.type.name.toUpperCase(),
+                  style: textTheme.xxs.semibold,
                 ),
               ),
-              ShadButton.destructive(
-                onPressed: () async {
-                  try {
-                    pending.value = false;
-                    await cubit.shutdown();
-                  } finally {
-                    pending.value = true;
-                  }
-                },
-                decoration: ShadDecoration(border: .all(radius: .circular(12))),
-                leading: Icon(
-                  LucideIcons.powerOff,
-                  color: colorScheme.destructiveForeground,
-                  size: 14,
-                ),
-              ),
+
               Expanded(
                 child: ShadButton.ghost(
                   onPressed: context.router.pop,
