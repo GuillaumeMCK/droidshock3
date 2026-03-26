@@ -6,13 +6,13 @@ import 'app_router.gr.dart';
 @AutoRouterConfig(replaceInRouteName: 'Page,Route')
 class AppRouter extends RootStackRouter with AppLogger {
   @override
-  RouteType defaultRouteType = .custom(
-    duration: 2.5.seconds,
-    reverseDuration: 2.5.seconds,
+  final RouteType defaultRouteType = .custom(
+    duration: 150.ms,
+    reverseDuration: 150.ms,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       final curvedAnimation = CurvedAnimation(
         parent: animation,
-        curve: Curves.easeInOutCubicEmphasized.flipped,
+        curve: Curves.easeInOutCubicEmphasized,
         reverseCurve: Curves.easeInOutCubicEmphasized,
       );
       return SlideTransition(
@@ -20,19 +20,16 @@ class AppRouter extends RootStackRouter with AppLogger {
           begin: const Offset(0, .13),
           end: Offset.zero,
         ).animate(curvedAnimation),
-        child: FadeTransition(
-          opacity: Tween<double>(begin: 0, end: 1).animate(curvedAnimation),
-          child: ScaleTransition(
-            scale: Tween<double>(begin: .9, end: 1).animate(curvedAnimation),
-            child: child,
-          ),
+        child: ScaleTransition(
+          scale: Tween<double>(begin: .9, end: 1).animate(curvedAnimation),
+          child: child,
         ),
       );
     },
   );
 
   @override
-  List<AutoRoute> get routes => [
+  final List<AutoRoute> routes = [
     AutoRoute(path: '/bootstrap', initial: true, page: BootstrapRoute.page),
     AutoRoute(
       path: '/app',
@@ -47,5 +44,5 @@ class AppRouter extends RootStackRouter with AppLogger {
 }
 
 extension RoutingExtension on BuildContext {
-  void pushBridgeLogView() => router.push(const BridgeRoute());
+  void gotoBridgePage() => router.navigate(const BridgeRoute());
 }
