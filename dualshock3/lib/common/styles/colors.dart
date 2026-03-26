@@ -33,6 +33,8 @@ extension ShadColorSchemeX on ShadColorScheme {
 
   Color get ds3Fg => custom['ds3Fg']!;
 
+  Color get ds3Pad => custom['ds3Pad']!;
+
   Color get shadow => const Color(0x05000000);
 
   Color get success => Color.lerp(const Color(0xFF17C964), foreground, .1)!;

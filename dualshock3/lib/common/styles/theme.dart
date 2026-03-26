@@ -38,6 +38,7 @@ ShadThemeData _themeData(bool isDark) {
       'ds3Bg': isDark ? const Color(0xFF000000) : const Color(0xFF191919),
       'ds3Border': isDark ? const Color(0xFF2A2A2A) : const Color(0xFF5F5F5F),
       'ds3Fg': theme.mutedForeground.withAlpha(225),
+      'ds3Pad': isDark ? Color(0x772A2A2A).alphaFaint : Color(0xFFEAEAEA),
     },
   );
   return ShadThemeData(
