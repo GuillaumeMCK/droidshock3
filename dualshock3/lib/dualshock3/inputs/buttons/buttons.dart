@@ -113,9 +113,13 @@ final class StartButton extends _Button {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTextStyle(
-      style: context.textTheme.muted.mono,
-      child: super.build(context),
+    return SizedBox(
+      width: 56,
+      child: DefaultTextStyle(
+        style: context.textTheme.muted.mono,
+        textAlign: .center,
+        child: super.build(context),
+      ),
     );
   }
 }
@@ -126,9 +130,13 @@ final class SelectButton extends _Button {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTextStyle(
-      style: context.textTheme.muted.mono,
-      child: super.build(context),
+    return SizedBox(
+      width: 56,
+      child: DefaultTextStyle(
+        style: context.textTheme.muted.mono,
+        textAlign: .center,
+        child: super.build(context),
+      ),
     );
   }
 }
