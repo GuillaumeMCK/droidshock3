@@ -8,12 +8,11 @@ final ShadThemeData darkTheme = _themeData(true);
 ShadThemeData _themeData(bool isDark) {
   final ShadStoneColorScheme theme = isDark ? .dark() : .light();
   final primary = Color(0xFF1C6FE0);
-  final secondary = Color.lerp(theme.secondary, primary, .01);
   final input = isDark ? const Color(0xFF2D2D2D) : const Color(0xFFFFFFFF);
   final background = isDark ? const Color(0xFF000000) : const Color(0xFFF9F9F9);
-  final adaptative = input.shiftLightness(
-    darkAmount: isDark ? -.145 : .15,
-    lightAmount: isDark ? .15 : -.05,
+  final secondary = background.shiftLightness(
+    darkAmount: .125,
+    lightAmount: .075,
   );
   final colorScheme = theme.copyWith(
     primary: primary,
@@ -21,16 +20,16 @@ ShadThemeData _themeData(bool isDark) {
     secondary: secondary,
     input: input,
     popover: input,
-    popoverForeground: .lerp(theme.popoverForeground, primary, .01),
-    card: adaptative,
-    cardForeground: .lerp(theme.cardForeground, primary, .01),
-    ring: .lerp(theme.ring, primary, .1)!.alphaFaint,
-    foreground: .lerp(theme.foreground, primary, .01)!.withAlpha(225),
+    popoverForeground: .lerp(theme.popoverForeground, primary, .03),
+    card: .lerp(theme.card, primary, .02),
+    cardForeground: .lerp(theme.cardForeground, primary, .03),
+    ring: .lerp(theme.ring, primary, .1)?.alphaFaint,
+    foreground: .lerp(theme.foreground, primary, .03)?.withAlpha(225),
     destructive: const Color(0xFFE00004),
     destructiveForeground: const Color(0xFFFFDDDD),
-    accent: .lerp(theme.accent, primary, .01),
-    accentForeground: .lerp(theme.accentForeground, primary, .01),
-    muted: .lerp(theme.muted, primary, .01)?.shiftLightness(),
+    accent: .lerp(theme.accent, primary, .03),
+    accentForeground: .lerp(theme.accentForeground, primary, .03),
+    muted: .lerp(theme.muted, primary, .03)?.shiftLightness(),
     mutedForeground: theme.mutedForeground.withAlpha(225),
     selection: primary.withAlpha(isDark ? 75 : 40),
     border: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFEAEAEA),
@@ -49,9 +48,18 @@ ShadThemeData _themeData(bool isDark) {
     accordionTheme: const ShadAccordionTheme(padding: .all(4)),
     cardTheme: ShadCardTheme(
       backgroundColor: colorScheme.card,
-      border: .all(width: .5),
-      radius: const .all(.circular(24)),
+      border: .all(width: 1),
+      radius: const .all(.circular(8)),
       padding: const .all(8),
+    ),
+    sheetTheme: ShadSheetTheme(
+      backgroundColor: colorScheme.card,
+      border: .all(
+        width: 1,
+        color: colorScheme.border,
+        strokeAlign: BorderSide.strokeAlignOutside,
+      ),
+      padding: const .symmetric(horizontal: 24, vertical: 16),
     ),
     selectTheme: ShadSelectTheme(
       decoration: ShadDecoration(
@@ -80,7 +88,7 @@ ShadThemeData _themeData(bool isDark) {
     ),
     secondaryButtonTheme: ShadButtonTheme(
       backgroundColor: secondary,
-      pressedBackgroundColor: theme.background,
+      pressedBackgroundColor: secondary.shiftLightness(),
       foregroundColor: colorScheme.mutedForeground,
       hoverForegroundColor: colorScheme.foreground,
       decoration: _buttonsDecoration.merge(
