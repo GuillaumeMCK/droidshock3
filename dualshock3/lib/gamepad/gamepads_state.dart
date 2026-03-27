@@ -46,7 +46,8 @@ final class GamepadsState extends Iterable<GamepadController> {
   @override
   bool operator ==(Object other) =>
       other is GamepadsState &&
-      pair == other.pair &&
+      pair?.id == other.pair?.id &&
+      pair?.name == other.pair?.name &&
       _gamepads.length == other._gamepads.length &&
       _gamepads.keys.every(other._gamepads.containsKey);
 

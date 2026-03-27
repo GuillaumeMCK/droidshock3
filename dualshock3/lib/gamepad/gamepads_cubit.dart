@@ -21,7 +21,11 @@ class GamepadsCubit extends Cubit<GamepadsState> with AppLogger {
     final newState = state.clone..update(gamepads);
     if (state == newState) return;
     log?.debug('Received gamepad update: [${gamepads.join(', ')}]');
-    emit(newState);
+    emit(newState..pair ??= newState.firstOrNull);
+  }
+
+  void pair(GamepadController gamepad) {
+    emit(state.clone..pair = gamepad);
   }
 
   @override
