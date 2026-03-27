@@ -24,19 +24,13 @@ class HomePage extends HookWidget {
           child: Stack(
             clipBehavior: .none,
             children: [
-              Align(
-                alignment: .centerLeft,
-                child: Transform.rotate(angle: pi, child: PlayerId()),
-              ),
+              Align(alignment: .centerLeft, child: PlayerId()),
               Align(
                 alignment: .bottomRight,
-                child: Transform.rotate(
-                  angle: pi,
-                  child: Text(
-                    'DROIDSHOCK 3',
-                    style: textTheme.p.extraBold.noHeight.withColor(
-                      colorScheme.primary,
-                    ),
+                child: Text(
+                  'DROIDSHOCK 3',
+                  style: textTheme.p.extraBold.noHeight.withColor(
+                    colorScheme.primary,
                   ),
                 ),
               ),
