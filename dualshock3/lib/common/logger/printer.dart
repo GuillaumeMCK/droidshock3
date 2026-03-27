@@ -20,12 +20,12 @@ final class DebugPrinter extends IPrinter {
     final color = levelColor(record.level);
     final time = record.time.toIso8601String().substring(11, 23);
     final type = '[${record.level.name.toUpperCase()}]\t$_resetColor';
-    stdout.writeln('$color$time $type(${record.loggerName}) ${record.message}');
+    debugPrint('$color$time $type(${record.loggerName}) ${record.message}');
     if (record.error != null) {
-      stderr.writeln('$color${record.error}$_resetColor');
+      debugPrint('$color${record.error}$_resetColor');
     }
     if (record.stackTrace != null) {
-      stderr.writeln('$color${record.stackTrace}$_resetColor');
+      debugPrint('$color${record.stackTrace}$_resetColor');
     }
   }
 
