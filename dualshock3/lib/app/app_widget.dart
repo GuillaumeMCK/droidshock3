@@ -3,12 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '/bridge/bridge_cubit.dart';
-import '/gamepads/gamepads_cubit.dart';
+import '/gamepad/gamepads_cubit.dart';
 import '/bootstrap/bootstrap_cubit.dart';
 import '/common/hooks.dart';
 import '/common/styles/styles.dart';
+import '/common/widgets/utils/no_scroll_behavior.dart';
 import '/injection.dart';
-import '/shared_widgets/utils/no_scroll_behavior.dart';
 import 'app_router.dart';
 import 'app_system_ui.dart';
 import 'app_router.gr.dart';
