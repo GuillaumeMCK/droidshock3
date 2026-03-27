@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:auto_route/auto_route.dart';
 
 import '/app/app_router.dart';
-import '/gamepads/gamepads_widget.dart';
+import '/gamepad/gamepad_state_widget.dart';
 import '/dualshock3/display/player_id.dart';
 import '/dualshock3/dualshock3_widget.dart';
 import '/app/app_shell.dart';
@@ -16,7 +16,7 @@ class HomePage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final ShadThemeData(:colorScheme, :textTheme) = context.theme;
-    final constraints = context.watch<AppConstraints>();
+    final Size(:height) = context.watch<AppSize>();
     return Column(
       children: [
         Padding(
@@ -37,10 +37,11 @@ class HomePage extends HookWidget {
             ],
           ),
         ),
-        ShadSeparator.horizontal(margin: .symmetric(vertical: 0)),
-        Expanded(child: GamepadsWidget()),
-        Dualshock3Widget(),
-        SizedBox(height: 16),
+        ShadSeparator.horizontal(margin: .zero),
+        GamepadStateWidget(),
+        Gap(height / 12),
+        Expanded(child: Dualshock3Widget()),
+        Gap(16),
         Padding(
           padding: .only(bottom: 16, top: 8),
           child: Align(
