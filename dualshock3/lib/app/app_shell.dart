@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import '/common/common.dart';
 
-typedef AppConstraints = BoxConstraints;
+typedef AppSize = Size;
 
 @RoutePage()
 class AppShellPage extends HookWidget {
@@ -20,8 +20,8 @@ class AppShellPage extends HookWidget {
     }, [state]);
 
     return LayoutBuilder(
-      builder: (context, constraints) => Provider<AppConstraints>.value(
-        value: constraints,
+      builder: (context, constraints) => Provider<AppSize>.value(
+        value: Size(constraints.maxWidth, constraints.maxHeight),
         child: FocusScope(
           child: ColoredBox(
             color: context.colorScheme.background,
