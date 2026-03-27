@@ -8,9 +8,8 @@ import 'inputs/inputs.dart';
 class RightPad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final ShadThemeData(:colorScheme, :textTheme) = context.theme;
-    final constraints = context.watch<AppConstraints>();
-    final size = constraints.maxWidth / 8;
+    final Size(:height, :width) = context.watch<AppSize>();
+    final size = width / 8;
     return Stack(
       alignment: .center,
       clipBehavior: .none,
@@ -18,8 +17,8 @@ class RightPad extends StatelessWidget {
         Pad(dimension: size * 3.25),
         Positioned.fill(
           child: Joystick(
-            size: constraints.maxWidth / 1.5,
-            knobSize: constraints.maxWidth / 7,
+            size: width / 1.5,
+            knobSize: width / 7,
             onPressed: (isPressed) => print('double tap $isPressed'),
             onPositionChanged: (position) => print('position $position'),
           ),
@@ -55,9 +54,8 @@ class RightPad extends StatelessWidget {
 class LeftPad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final ShadThemeData(:colorScheme, :textTheme) = context.theme;
-    final constraints = context.watch<AppConstraints>();
-    final size = constraints.maxWidth / 8;
+    final Size(:height, :width) = context.watch<AppSize>();
+    final size = width / 8;
     return Stack(
       alignment: .center,
       clipBehavior: .none,
@@ -65,8 +63,8 @@ class LeftPad extends StatelessWidget {
         Pad(dimension: size * 3.25),
         Positioned.fill(
           child: Joystick(
-            size: constraints.maxWidth / 1.5,
-            knobSize: constraints.maxWidth / 7,
+            size: width / 1.5,
+            knobSize: width / 7,
             onPressed: (isPressed) => print('double tap $isPressed'),
             onPositionChanged: (position) => print('position $position'),
           ),
@@ -115,12 +113,12 @@ class Dualshock3Widget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ShadThemeData(:colorScheme, :textTheme) = context.theme;
-    final constraints = context.watch<AppConstraints>();
-    final size = constraints.maxWidth / 3.5;
+    final Size(:height, :width) = context.watch<AppSize>();
+    final size = width / 3.5;
     return Padding(
       padding: .symmetric(horizontal: 8),
       child: Column(
-        mainAxisSize: .min,
+        mainAxisSize: .max,
         children: [
           Row(
             mainAxisAlignment: .spaceBetween,
@@ -157,9 +155,7 @@ class Dualshock3Widget extends StatelessWidget {
               ),
             ],
           ),
-          Container(
-            height: constraints.maxHeight / 2.75,
-            alignment: .center,
+          Expanded(
             child: Row(
               mainAxisAlignment: .spaceBetween,
               crossAxisAlignment: .stretch,
@@ -171,10 +167,7 @@ class Dualshock3Widget extends StatelessWidget {
             mainAxisAlignment: .center,
             children: [
               SelectButton(onPressed: (isPressed) {}),
-              PSButton(
-                size: constraints.maxWidth / 12,
-                onPressed: (isPressed) {},
-              ),
+              PSButton(size: width / 12, onPressed: (isPressed) {}),
               StartButton(onPressed: (isPressed) {}),
             ],
           ),

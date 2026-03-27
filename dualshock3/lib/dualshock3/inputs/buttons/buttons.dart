@@ -116,7 +116,7 @@ final class StartButton extends _Button {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 56,
+      width: 60,
       child: DefaultTextStyle(
         style: context.textTheme.muted.mono,
         textAlign: .center,
@@ -133,7 +133,7 @@ final class SelectButton extends _Button {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 56,
+      width: 60,
       child: DefaultTextStyle(
         style: context.textTheme.muted.mono,
         textAlign: .center,
