@@ -24,9 +24,8 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
   final List<int> _buffer = [];
 
   static const kExePath = '$kBridgeDir/bridge';
-
-  static final String logPath = '$fTmpDir/bridge.log';
-  static final String processPath = '$fTmpDir/process';
+  static final logPath = '$fTmpDir/bridge.log';
+  static final processPath = '$fTmpDir/process';
 
   void _onOutput(Uint8List data) {
     _buffer.addAll(data);
