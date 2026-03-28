@@ -5,13 +5,13 @@ final class GamepadsState extends Iterable<GamepadController> {
 
   final Map<String, GamepadController> _gamepads;
 
-  GamepadController? _paired;
+  GamepadState? _selected;
 
-  GamepadController? get pair => _paired;
+  GamepadState? get selected => _selected;
 
-  set pair(GamepadController? gamepad) => switch (gamepad) {
+  set selected(GamepadController? gamepad) => switch (gamepad) {
     GamepadController(:final id) when _gamepads.containsKey(id) =>
-      _paired = gamepad,
+      _selected = .new(_gamepads[id]!),
     _ => null,
   };
 
@@ -20,14 +20,15 @@ final class GamepadsState extends Iterable<GamepadController> {
     for (final gamepad in gamepads) {
       _gamepads[gamepad.id] = gamepad;
     }
-    if (_paired case GamepadController(:final id)? when _gamepads[id] == null) {
-      _paired = null;
+    if (_selected case GamepadController(:final id)?
+        when _gamepads[id] == null) {
+      _selected = null;
     }
   }
 
   void remove(String id) {
-    if (_paired case GamepadController(:final id) when id == id) {
-      _paired = null;
+    if (_selected case GamepadController(:final id) when id == id) {
+      _selected = null;
     }
     if (_gamepads[id] != null) {
       _gamepads.remove(id);
@@ -36,7 +37,7 @@ final class GamepadsState extends Iterable<GamepadController> {
 
   GamepadsState get clone => GamepadsState()
     .._gamepads.addAll(_gamepads)
-    .._paired = _paired;
+    .._selected = _selected;
 
   GamepadController? operator [](int id) => elementAt(id);
 
@@ -46,11 +47,11 @@ final class GamepadsState extends Iterable<GamepadController> {
   @override
   bool operator ==(Object other) =>
       other is GamepadsState &&
-      pair?.id == other.pair?.id &&
-      pair?.name == other.pair?.name &&
+      selected?.id == other.selected?.id &&
+      selected?.name == other.selected?.name &&
       _gamepads.length == other._gamepads.length &&
       _gamepads.keys.every(other._gamepads.containsKey);
 
   @override
-  int get hashCode => Object.hash(_gamepads.keys.toSet(), _paired);
+  int get hashCode => Object.hash(_gamepads.keys.toSet(), _selected);
 }

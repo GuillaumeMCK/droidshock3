@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:gamepads/gamepads.dart';
 
 import '/common/common.dart';
+import 'gamepad_state.dart';
 
 part 'gamepads_state.dart';
 
@@ -21,11 +22,11 @@ class GamepadsCubit extends Cubit<GamepadsState> with AppLogger {
     final newState = state.clone..update(gamepads);
     if (state == newState) return;
     log?.debug('Received gamepad update: [${gamepads.join(', ')}]');
-    emit(newState..pair ??= newState.firstOrNull);
+    emit(newState..selected ??= newState.firstOrNull);
   }
 
   void pair(GamepadController gamepad) {
-    emit(state.clone..pair = gamepad);
+    emit(state.clone..selected = gamepad);
   }
 
   @override
