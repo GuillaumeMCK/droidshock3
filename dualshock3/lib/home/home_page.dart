@@ -1,10 +1,8 @@
-import 'dart:math';
-
 import 'package:auto_route/auto_route.dart';
 
 import '/app/app_router.dart';
-import '/gamepad/gamepad_state_widget.dart';
-import '/dualshock3/display/player_id.dart';
+import '/gamepad/widgets/gamepad_state_widget.dart';
+import '/dualshock3/widgets/display/player_id.dart';
 import '/dualshock3/dualshock3_widget.dart';
 import '/app/app_shell.dart';
 import '/common/common.dart';
@@ -49,7 +47,7 @@ class HomePage extends HookWidget {
             child: Transform.rotate(
               angle: -.76,
               child: GestureDetector(
-                onDoubleTap: () => context.gotoBridgePage(),
+                onDoubleTap: () => context.navToBridgePage(),
                 child: Icon(
                   LucideIcons.usb,
                   color: colorScheme.muted,
