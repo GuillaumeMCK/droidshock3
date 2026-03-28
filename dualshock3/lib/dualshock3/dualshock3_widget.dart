@@ -2,8 +2,8 @@ import '/app/app_shell.dart';
 
 import '/common/common.dart';
 
-import 'display/pad.dart';
-import 'inputs/inputs.dart';
+import 'widgets/display/pad.dart';
+import 'widgets/inputs/inputs.dart';
 
 class RightPad extends StatelessWidget {
   @override
