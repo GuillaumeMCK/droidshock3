@@ -4,9 +4,9 @@
 /// - A bit position in the button bitfield (bytes 2-4 of input report)
 /// - An analog byte offset for pressure-sensitive buttons (or -1 if not analog)
 ///
-/// ## Button Layout
+/// ## Input Layout
 ///
-/// **Digital Buttons (bytes 2-4):**
+/// **Digital Inputs (bytes 2-4):**
 /// - Byte 2 (bits 0-7): SELECT, L3, R3, START, UP, RIGHT, DOWN, LEFT
 /// - Byte 3 (bits 8-15): L2, R2, L1, R1, TRIANGLE, CIRCLE, CROSS, SQUARE
 /// - Byte 4 (bit 16): PS
@@ -19,14 +19,14 @@
 ///
 /// ```dart
 /// // Check if button has analog support
-/// if (Button.cross.hasAnalog) {
-///   print('Cross button pressure byte: ${Button.cross.analogByte}');
+/// if (Input.cross.hasAnalog) {
+///   print('Cross button pressure byte: ${Input.cross.analogByte}');
 /// }
 ///
 /// // Get bit mask for button
-/// final mask = Button.triangle.bitMask; // 1 << 12
+/// final mask = Input.triangle.bitMask; // 1 << 12
 /// ```
-enum Button {
+enum DS3Input {
   select,
   l3,
   r3,
@@ -43,13 +43,19 @@ enum Button {
   circle,
   cross,
   square,
-  ps;
+  ps,
+  leftStickX,
+  leftStickY,
+  rightStickX,
+  rightStickY;
 
-  const Button();
+  /// Bit position in the button bitfield (0-16).
+
+  const DS3Input();
 
   static const _analogReservedBytes = 10;
 
-  static const List<Button> analogButtons = [
+  static const List<DS3Input> analogInputs = [
     l2,
     l1,
     r2,
@@ -71,7 +77,7 @@ enum Button {
   int get analogByte {
     assert(
       hasAnalog,
-      'Button $name does not support analog pressure, but analogByte '
+      'Input $name does not support analog pressure, but analogByte '
       'tried to access it. Check hasAnalog before accessing analogByte.',
     );
     return bit + _analogReservedBytes;
@@ -81,7 +87,7 @@ enum Button {
   // final int analogByte;
 
   /// Whether the button has analog pressure support.
-  bool get hasAnalog => analogButtons.contains(this);
+  bool get hasAnalog => analogInputs.contains(this);
 
   /// Bit mask for the button (1 << bit).
   int get bitMask => 1 << bit;

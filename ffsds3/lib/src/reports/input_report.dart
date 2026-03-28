@@ -10,7 +10,7 @@
 /// |--------|------|-------------------------------------------|
 /// | 0      | 1    | Report ID (0x01)                          |
 /// | 1      | 1    | Reserved (0x00)                           |
-/// | 2-4    | 3    | Button states (bitfield)                  |
+/// | 2-4    | 3    | Input states (bitfield)                  |
 /// | 5      | 1    | Reserved (0x00)                           |
 /// | 6-9    | 4    | Analog sticks (L.X, L.Y, R.X, R.Y)        |
 /// | 10-25  | 16   | Analog button pressures                   |
@@ -26,10 +26,10 @@
 /// final report = InputReport();
 ///
 /// // Set button states
-/// report.setButton(Button.cross.bit, true);
+/// report.setInput(Input.cross.bit, true);
 ///
 /// // Set analog sticks (directly)
-/// report.setAnalog(Button.l2.analogByte, 200);
+/// report.setAnalog(Input.l2.analogByte, 200);
 ///
 /// // Use records for grouped stick values
 /// report.setSticks(
@@ -74,7 +74,7 @@ final class InputReport {
   /// pressure value (bytes 10-25) for buttons that support analog input.
   ///
   /// Parameters:
-  /// - [bit]: The button bit position (0-23). Use [Button.bit] values.
+  /// - [bit]: The button bit position (0-23). Use [Input.bit] values.
   /// - [pressed]: Whether the button is pressed.
   /// - [analogValue]: Optional analog pressure (0-255). If not provided and
   ///   [pressed] is true, defaults to 255 (maximum pressure). If the button
@@ -83,16 +83,16 @@ final class InputReport {
   /// Example:
   /// ```dart
   /// // Simple press (auto-sets analog to 255)
-  /// report.setButton(Button.cross.bit, true);
+  /// report.setInput(Input.cross.bit, true);
   ///
   /// // Custom analog pressure
-  /// report.setButton(Button.r2.bit, true, analogValue: 128);
+  /// report.setInput(Input.r2.bit, true, analogValue: 128);
   ///
   /// // Release button (clears both bitfield and analog)
-  /// report.setButton(Button.cross.bit, false);
+  /// report.setInput(Input.cross.bit, false);
   /// ```
-  void setButton(int bit, bool pressed, {int? analogValue}) {
-    assert(bit >= 0 && bit < 24, 'Button bit must be in range 0-23');
+  void setInput(int bit, bool pressed, {int? analogValue}) {
+    assert(bit >= 0 && bit < 24, 'Input bit must be in range 0-23');
     assert(
       analogValue == null || (analogValue >= 0 && analogValue <= 255),
       'Analog value must be in range 0-255',
@@ -109,7 +109,7 @@ final class InputReport {
     bytes[4] = _buttons.byte(2);
 
     // Update analog pressure for buttons that support it
-    final button = Button.values.firstWhere((b) => b.bit == bit);
+    final button = DS3Input.values.firstWhere((b) => b.bit == bit);
     if (button.hasAnalog) {
       final pressure = pressed ? (analogValue ?? 255) : 0;
       bytes[button.analogByte] = pressure;
@@ -119,21 +119,21 @@ final class InputReport {
   /// Gets the current pressed state of a button from the bitfield.
   ///
   /// Parameters:
-  /// - [bit]: The button bit position (0-23). Use [Button.bit] values.
+  /// - [bit]: The button bit position (0-23). Use [Input.bit] values.
   ///
   /// Returns: `true` if the button is currently pressed, `false` otherwise.
   ///
   /// Note: This only returns the digital (on/off) state. For analog pressure
-  /// values, use [getAnalog] with [Button.analogByte].
+  /// values, use [getAnalog] with [Input.analogByte].
   bool pressed(int bit) {
-    assert(bit >= 0 && bit < 24, 'Button bit must be in range 0-23');
+    assert(bit >= 0 && bit < 24, 'Input bit must be in range 0-23');
     return (_buttons >> bit) & 1 == 1;
   }
 
   /// Sets an analog value directly at the specified byte offset.
   ///
   /// This method provides low-level control over analog values in the report.
-  /// For most use cases, prefer [setButton] which handles both digital and
+  /// For most use cases, prefer [setInput] which handles both digital and
   /// analog states automatically.
   ///
   /// Parameters:
@@ -143,12 +143,12 @@ final class InputReport {
   ///
   /// Common offsets:
   /// - 6-9: Analog sticks (use [setSticks] instead)
-  /// - 10-25: Button pressures (use [setButton] instead)
+  /// - 10-25: Input pressures (use [setInput] instead)
   ///
   /// Example:
   /// ```dart
   /// // Manually set L2 trigger to half pressure
-  /// report.setAnalog(Button.l2.analogByte, 128);
+  /// report.setAnalog(Input.l2.analogByte, 128);
   /// ```
   void setAnalog(int offset, int targetValue) {
     assert(offset >= 0 && offset < 49, 'Offset must be in range 0-48');
@@ -166,7 +166,7 @@ final class InputReport {
   /// Example:
   /// ```dart
   /// // Read R2 trigger pressure
-  /// final pressure = report.getAnalog(Button.r2.analogByte);
+  /// final pressure = report.getAnalog(Input.r2.analogByte);
   /// print('R2 pressure: $pressure');
   /// ```
   int getAnalog(int offset) {
@@ -226,8 +226,8 @@ final class InputReport {
   String toString() {
     final buffer = StringBuffer()
       ..writeln('InputReport:')
-      ..writeln('  Buttons:');
-    for (final button in Button.values) {
+      ..writeln('  Inputs:');
+    for (final button in DS3Input.values) {
       // show only buttons that are pressed or have analog input for clarity
       if (!pressed(button.bit) && !button.hasAnalog) {
         continue;

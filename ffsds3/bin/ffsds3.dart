@@ -29,32 +29,32 @@ StreamSubscription<void> _loop(Dualshock3 c) {
   stdin.lineMode = true;
 
   const btns = {
-    'ps': Button.ps,
-    'x': Button.cross,
-    'cross': Button.cross,
-    'o': Button.circle,
-    'circle': Button.circle,
-    'c': Button.circle,
-    'square': Button.square,
-    's': Button.square,
-    'triangle': Button.triangle,
-    't': Button.triangle,
-    'start': Button.start,
-    'select': Button.select,
-    'l1': Button.l1,
-    'l2': Button.l2,
-    'l3': Button.l3,
-    'r1': Button.r1,
-    'r2': Button.r2,
-    'r3': Button.r3,
-    'up': Button.up,
-    'u': Button.up,
-    'down': Button.down,
-    'd': Button.down,
-    'left': Button.left,
-    'l': Button.left,
-    'right': Button.right,
-    'r': Button.right,
+    'ps': DS3Input.ps,
+    'x': DS3Input.cross,
+    'cross': DS3Input.cross,
+    'o': DS3Input.circle,
+    'circle': DS3Input.circle,
+    'c': DS3Input.circle,
+    'square': DS3Input.square,
+    's': DS3Input.square,
+    'triangle': DS3Input.triangle,
+    't': DS3Input.triangle,
+    'start': DS3Input.start,
+    'select': DS3Input.select,
+    'l1': DS3Input.l1,
+    'l2': DS3Input.l2,
+    'l3': DS3Input.l3,
+    'r1': DS3Input.r1,
+    'r2': DS3Input.r2,
+    'r3': DS3Input.r3,
+    'up': DS3Input.up,
+    'u': DS3Input.up,
+    'down': DS3Input.down,
+    'd': DS3Input.down,
+    'left': DS3Input.left,
+    'l': DS3Input.left,
+    'right': DS3Input.right,
+    'r': DS3Input.right,
   };
 
   int randomByte() => (Random().nextDouble() * 255).toInt();
@@ -70,7 +70,7 @@ StreamSubscription<void> _loop(Dualshock3 c) {
       case final command when btns.containsKey(command):
         final btn = btns[command]!;
         final pressed = !c.input.pressed(btn.bit);
-        c.input.setButton(btn.bit, pressed);
+        c.input.setInput(btn.bit, pressed);
     }
     stdout.writeln(c.input);
   });
