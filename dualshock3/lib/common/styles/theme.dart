@@ -97,7 +97,7 @@ ShadThemeData _themeData(bool isDark) {
     ),
     outlineButtonTheme: ShadButtonTheme(
       backgroundColor: colorScheme.card,
-      pressedBackgroundColor: colorScheme.card.darker,
+      pressedBackgroundColor: colorScheme.background,
       foregroundColor: colorScheme.mutedForeground,
       hoverForegroundColor: colorScheme.foreground,
       decoration: _buttonsDecoration.merge(
