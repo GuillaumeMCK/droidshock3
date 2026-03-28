@@ -5,12 +5,11 @@ import 'app_router.gr.dart';
 
 @AutoRouterConfig(replaceInRouteName: 'Page,Route')
 class AppRouter extends RootStackRouter with AppLogger {
-  @override
-  final RouteType defaultRouteType = .custom(
-    duration: 150.ms,
-    reverseDuration: 150.ms,
+  static final _pageTransition = RouteType.custom(
+    duration: 250.ms,
+    reverseDuration: 250.ms,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      final curvedAnimation = CurvedAnimation(
+      final curved = CurvedAnimation(
         parent: animation,
         curve: Curves.easeInOutCubicEmphasized,
         reverseCurve: Curves.easeInOutCubicEmphasized,
@@ -19,23 +18,58 @@ class AppRouter extends RootStackRouter with AppLogger {
         position: Tween<Offset>(
           begin: const Offset(0, .13),
           end: Offset.zero,
-        ).animate(curvedAnimation),
+        ).animate(curved),
         child: ScaleTransition(
-          scale: Tween<double>(begin: .9, end: 1).animate(curvedAnimation),
+          scale: Tween<double>(begin: .9, end: 1).animate(curved),
           child: child,
         ),
       );
     },
   );
 
+  static final _bottomSheetTransition = RouteType.custom(
+    opaque: false,
+    barrierDismissible: true,
+    barrierColor: const Color(0x77000000),
+    duration: 250.ms,
+    reverseDuration: 250.ms,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 1), // slide up from bottom
+          end: Offset.zero,
+        ).animate(curved),
+        child: child,
+      );
+    },
+  );
+
   @override
-  final List<AutoRoute> routes = [
+  RouteType get defaultRouteType => _pageTransition;
+
+  @override
+  List<AutoRoute> get routes => [
     AutoRoute(path: '/bootstrap', initial: true, page: BootstrapRoute.page),
     AutoRoute(
       path: '/app',
       page: AppShellRoute.page,
       children: [
         AutoRoute(path: 'home', page: HomeRoute.page, initial: true),
+        AutoRoute(
+          path: 'select-gamepad',
+          page: GamepadSelectorRoute.page,
+          type: _bottomSheetTransition,
+        ),
+        AutoRoute(
+          path: 'remap-gamepad',
+          page: GamepadRemapRoute.page,
+          type: _bottomSheetTransition,
+        ),
         AutoRoute(path: 'bridge', page: BridgeRoute.page),
         RedirectRoute(path: '*', redirectTo: 'home'),
       ],
@@ -44,5 +78,9 @@ class AppRouter extends RootStackRouter with AppLogger {
 }
 
 extension RoutingExtension on BuildContext {
-  void gotoBridgePage() => router.navigate(const BridgeRoute());
+  void navToBridgePage() => router.navigate(const BridgeRoute());
+
+  void navToGamepadSelector() => router.navigate(const GamepadSelectorRoute());
+
+  void navToGamepadRemap() => router.navigate(const GamepadRemapRoute());
 }
