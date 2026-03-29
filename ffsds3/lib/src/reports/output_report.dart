@@ -48,6 +48,15 @@ final class LedPattern {
     required this.repeatCount,
   });
 
+  const LedPattern.off()
+    : this(
+        timeEnabled: 0,
+        timeDisabled: 0,
+        timeOn: 0,
+        timeOff: 0,
+        repeatCount: 0,
+      );
+
   /// Total duration the LED is in the "on" phase of the cycle (~10 ms units).
   /// 0 = LED stays off regardless of other fields.
   final int timeEnabled;
