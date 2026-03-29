@@ -1,11 +1,7 @@
-import 'dart:async';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:ffsds3/ffsds3.dart';
-import 'package:gamepads/gamepads.dart';
 
 import '/app/app_shell.dart';
-import '/common/widgets/display/progress_ring.dart';
 import '/common/common.dart';
 import '/gamepad/gamepads_cubit.dart';
 
@@ -15,73 +11,126 @@ class GamepadRemapPage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ShadThemeData(:textTheme) = context.theme;
-    final Size(:height) = context.watch<AppSize>();
+    final ShadThemeData(:textTheme, :colorScheme) = context.theme;
+    final Size(:height, :width) = context.watch<AppSize>();
     final gamepads = useBlocState(context.read<GamepadsCubit>());
 
-    final AsyncSnapshot(:data) = useStream(
-      gamepads.selected?.onPressed ?? Stream.empty(),
+    final first = useState<DS3Input?>(null);
+    final second = useState<DS3Input?>(null);
+
+    usePostFrameEffect(() {
+      if (gamepads.selected == null) context.back();
+    }, keys: [gamepads]);
+
+    useStreamListener(
+      gamepads.selected?.onPressed ?? const Stream.empty(),
+      (data) {
+        final (input, _) = data;
+        if (first.value != null && second.value != null) {
+          first.value = null;
+          second.value = null;
+        }
+
+        if (first.value == null) {
+          first.value = input;
+        } else if (first.value != input) {
+          second.value = input;
+        }
+      },
+      keys: [gamepads.selected?.id],
     );
 
+    void onSwap() {
+      final (f, s) = (first.value, second.value);
+      if (f != null && s != null) gamepads.selected?.remap(f, s);
+      first.value = null;
+      second.value = null;
+    }
+
+    void onRestore() {
+      gamepads.selected?.restoreMap();
+      first.value = null;
+      second.value = null;
+    }
+
+    final canSwap = first.value != null && second.value != null;
+    final hasAny = first.value != null || second.value != null;
+
     return ShadSheetInheritedWidget(
-      side: .bottom,
+      side: ShadSheetSide.bottom,
       child: ShadSheet(
         title: const Text('Remap Inputs'),
-        description: const Text('Press buttons on your gamepad to remap them'),
-        scrollable: true,
-        child: SizedBox(
-          height: height * .4,
-          child: Center(child: Column(children: [Text('$data')])),
+        description: const Text(
+          'Press a button to select it, then press another to swap.',
+        ),
+        actions: [
+          ShadButton.outline(
+            onPressed: onRestore,
+            child: const Text('Restore'),
+          ),
+          ShadButton(
+            enabled: hasAny,
+            onPressed: canSwap ? onSwap : null,
+            child: const Text('Swap'),
+          ),
+        ],
+        child: _SwapDisplay(
+          height: height,
+          width: width,
+          textTheme: textTheme,
+          colorScheme: colorScheme,
+          first: first.value,
+          second: second.value,
         ),
       ),
     );
   }
 }
 
-//
-// class _MapInput extends HookWidget {
-//   final DS3Input target;
-//   final String? gamepadId;
-//
-//   const _MapInput(this.target, this.gamepadId);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final active = useState(false);
-//     final button = useState<GamepadButton?>(null);
-//     final axis = useState<GamepadAxis?>(null);
-//     final pressed = useState(false);
-//
-//     useStreamListener(Gamepads.normalizedEvents, (event) {
-//       if (gamepadId != event.gamepadId) return;
-//       print(event);
-//
-//       if (event.button == defaultMapping[target]) {
-//         button.value = event.button;
-//         pressed.value = event.value != 0;
-//       }
-//     });
-//
-//     return ShadButton.outline(
-//       size: .lg,
-//       onPressed: () => active.value = !active.value,
-//       trailing: ShadBadge.secondary(child: Text(target.name)),
-//       decoration: ShadDecoration(
-//         border: .all(
-//           color: pressed.value
-//               ? context.colorScheme.primary
-//               : context.colorScheme.muted,
-//         ),
-//       ),
-//       child: DefaultTextStyle(
-//         style: context.textTheme.small.noHeight,
-//         child: switch (active.value) {
-//           true when (button.value != null) => Text(button.value!.name),
-//           true when (axis.value != null) => Text(axis.value!.name),
-//           true => ProgressRing(size: 14),
-//           false => Text(defaultMapping[target]!.name),
-//         },
-//       ),
-//     );
-//   }
-// }
+class _SwapDisplay extends StatelessWidget {
+  const _SwapDisplay({
+    required this.height,
+    required this.width,
+    required this.textTheme,
+    required this.colorScheme,
+    required this.first,
+    required this.second,
+  });
+
+  final double height;
+  final double width;
+  final ShadTextTheme textTheme;
+  final ShadColorScheme colorScheme;
+  final DS3Input? first;
+  final DS3Input? second;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height * .30,
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              first?.name.toUpperCase() ?? '?',
+              style: textTheme.h3,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Icon(
+            LucideIcons.arrowLeftRight300,
+            size: width / 6,
+            color: colorScheme.muted,
+          ),
+          Expanded(
+            child: Text(
+              second?.name.toUpperCase() ?? '?',
+              style: textTheme.h3,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

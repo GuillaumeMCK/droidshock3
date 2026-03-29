@@ -28,29 +28,37 @@ const defaultMapping = {
 };
 
 class GamepadState {
-  GamepadState(this.gamepad) : _mapping = defaultMapping;
+  GamepadState(this.gamepad) : _mapping = Map.of(defaultMapping);
 
   final GamepadController gamepad;
   Map<Enum, DS3Input> _mapping;
 
-  void editMap(Enum input, DS3Input ds3Input) {
-    _mapping[input] = ds3Input;
-  }
-
-  void restoreMap() {
-    _mapping = defaultMapping;
-  }
+  String get id => gamepad.id;
 
   String get name => gamepad.name;
-
-  String get id => gamepad.id;
 
   Map<String, bool> get buttons => gamepad.state.buttonInputs;
 
   Map<String, double> get analog => gamepad.state.analogInputs;
 
+  Map<Enum, DS3Input> get mapping => Map.unmodifiable(_mapping);
+
+  void remap(DS3Input a, DS3Input b) {
+    final keyA = _keyFor(a);
+    final keyB = _keyFor(b);
+    if (keyA != null && keyB != null) {
+      final tmp = _mapping[keyA]!;
+      _mapping[keyA] = _mapping[keyB]!;
+      _mapping[keyB] = tmp;
+    }
+  }
+
+  void restoreMap() => _mapping = Map.of(defaultMapping);
+
+  void dispose() => gamepad.dispose();
+
   Stream<(DS3Input, double)> get onEvent => Gamepads.normalizedEvents
-      .where((e) => e.gamepadId == gamepad.id)
+      .where((e) => e.gamepadId == id) // Only events for this gamepad.
       .map((e) {
         final NormalizedGamepadEvent(:axis, :button, :value) = e;
         final ds3Input = _mapping[button ?? axis];
@@ -58,10 +66,23 @@ class GamepadState {
         return (ds3Input, value);
       });
 
-  Stream<(DS3Input, double)> get onPressed =>
-      onEvent.where((e) => e.$2.abs() > .25);
-
-  void dispose() {
-    gamepad.dispose();
+  Stream<(DS3Input, double)> get onPressed {
+    const debounce = Duration(milliseconds: 200);
+    const threshold = .25;
+    DateTime? last;
+    return onEvent.where((e) {
+      if (e.$2.abs() <= threshold) {
+        return false;
+      }
+      final now = DateTime.now();
+      if (last case DateTime d when now.difference(d) < debounce) {
+        return false;
+      }
+      last = now;
+      return true;
+    });
   }
+
+  Enum? _keyFor(DS3Input value) =>
+      _mapping.entries.where((e) => e.value == value).firstOrNull?.key;
 }
