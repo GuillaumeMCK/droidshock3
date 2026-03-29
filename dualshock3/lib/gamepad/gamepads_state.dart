@@ -20,8 +20,7 @@ final class GamepadsState extends Iterable<GamepadController> {
     for (final gamepad in gamepads) {
       _gamepads[gamepad.id] = gamepad;
     }
-    if (_selected case GamepadController(:final id)?
-        when _gamepads[id] == null) {
+    if (_selected case GamepadState(:final id)? when _gamepads[id] == null) {
       _selected = null;
     }
   }
