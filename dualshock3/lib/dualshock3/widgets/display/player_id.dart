@@ -10,7 +10,7 @@ class PlayerId extends HookWidget {
     color: Color(0xFFFF0000),
     child: SizedBox.square(dimension: 8),
   );
-  
+
   static const _inactive = ColoredBox(
     color: Color(0x1DFF0000),
     child: SizedBox.square(dimension: 8),

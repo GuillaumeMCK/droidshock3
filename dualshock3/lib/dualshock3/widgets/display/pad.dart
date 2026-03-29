@@ -17,15 +17,11 @@ class Pad extends StatelessWidget {
 }
 
 class _DS3PadPainter extends CustomPainter {
-  const _DS3PadPainter({
-    required this.color,
-    this.armRatio = 0.38,
-    this.cornerRadius = 0.05,
-  });
+  const _DS3PadPainter({required this.color});
 
   final Color color;
-  final double armRatio;
-  final double cornerRadius;
+  static const double armRatio = .38;
+  static const double cornerRadius = .05;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -86,8 +82,5 @@ class _DS3PadPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_DS3PadPainter o) =>
-      o.color != color ||
-      o.armRatio != armRatio ||
-      o.cornerRadius != cornerRadius;
+  bool shouldRepaint(_DS3PadPainter o) => o.color != color;
 }
