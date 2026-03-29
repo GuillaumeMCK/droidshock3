@@ -74,7 +74,7 @@ final class InputReport {
   /// pressure value (bytes 10-25) for buttons that support analog input.
   ///
   /// Parameters:
-  /// - [bit]: The button bit position (0-23). Use [Input.bit] values.
+  /// - [bit]: The button bit position (0-23). Use [DS3Input.bit] values.
   /// - [pressed]: Whether the button is pressed.
   /// - [analogValue]: Optional analog pressure (0-255). If not provided and
   ///   [pressed] is true, defaults to 255 (maximum pressure). If the button
@@ -119,12 +119,12 @@ final class InputReport {
   /// Gets the current pressed state of a button from the bitfield.
   ///
   /// Parameters:
-  /// - [bit]: The button bit position (0-23). Use [Input.bit] values.
+  /// - [bit]: The button bit position (0-23). Use [DS3Input.bit] values.
   ///
   /// Returns: `true` if the button is currently pressed, `false` otherwise.
   ///
   /// Note: This only returns the digital (on/off) state. For analog pressure
-  /// values, use [getAnalog] with [Input.analogByte].
+  /// values, use [getAnalog] with [DS3Input.analogByte].
   bool pressed(int bit) {
     assert(bit >= 0 && bit < 24, 'Input bit must be in range 0-23');
     return (_buttons >> bit) & 1 == 1;
