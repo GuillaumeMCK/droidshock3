@@ -35,11 +35,14 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
     }
   }
 
-  Future<void> sendInputReport(InputReport input) async {
+  void emitReport([DS3Input? input, Object? value]) {
     if (state.type != .connected) {
       return log?.warn('Send input called when not connected');
     }
-    _socket?.add(input.bytes);
+    if (input != null && value != null) {
+      this.input.setInput(input, value);
+    }
+    _socket?.add(this.input.bytes);
   }
 
   Future<void> setup() async => runZonedGuarded(() async {
