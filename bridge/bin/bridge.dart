@@ -18,16 +18,25 @@ void main(List<String> args) => runZonedGuarded(
     final libaio = File(kLibaioPath);
     if (!libaio.existsSync()) libaio.writeAsBytesSync(libaioBytes);
 
-    final processFile = switch (args) {
-      ['--process-path', final processPath] => File(processPath),
-      _ => File(kProcessPath),
-    };
+    File? processFile;
+    int? clientPid;
 
-    await Ds3Bridge.start.then((server) async {
+    // Parse args: --process-path <path>  --client-pid <pid>
+    for (var i = 0; i < args.length - 1; i++) {
+      switch (args[i]) {
+        case '--process-path':
+          processFile = File(args[i + 1]);
+        case '--client-pid':
+          clientPid = int.tryParse(args[i + 1]);
+      }
+    }
+    processFile ??= File(kProcessPath);
+
+    await Ds3Bridge.start(clientPid: clientPid).then((server) async {
       stdout.writeln(
         'listening on ${InternetAddress.anyIPv4.address}:${server.port}',
       );
-      processFile.writeAsStringSync('$pid:${server.port}');
+      processFile!.writeAsStringSync('$pid:${server.port}');
       await server.released;
     });
   },
