@@ -70,8 +70,8 @@ final class Dualshock3 extends HIDFunctionFs implements Board {
         ]),
         speeds: {.fullSpeed, .highSpeed},
         config: const .bidirectional(
-          pollInterval: .new(milliseconds: 1),
-          reportInterval: .new(milliseconds: 1),
+          pollInterval: .new(milliseconds: 8),
+          reportInterval: .new(milliseconds: 8),
         ),
       ) {
     features = FeatureReport(this);
