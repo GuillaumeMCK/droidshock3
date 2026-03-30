@@ -78,7 +78,7 @@ final class Eeprom {
   ///   (low byte) and 0x60 (high byte).
   /// - [controllerType]: Controller type byte at bank 0 offset 0x01.
   ///   Use 0x04 for DualShock 3, 0x03 for Sixaxis.
-  Eeprom({int firmware = 0x8A, int controllerType = 0x04})
+  Eeprom({int firmware = 0x0C08, int controllerType = 0x04})
     : bankA = Uint8List(256)
         // 0x00–0x03: Controller identification
         // [0x00] 0x01 constant, [0x01] controller type (0x03=Sixaxis, 0x04=DS3),
