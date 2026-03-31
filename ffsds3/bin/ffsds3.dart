@@ -63,14 +63,13 @@ StreamSubscription<void> _loop(Dualshock3 c) {
     final cmd = line.trim().toLowerCase();
     switch (cmd) {
       case 'stk':
-        c.input.setSticks(
-          left: (x: randomByte(), y: randomByte()),
-          right: (x: randomByte(), y: randomByte()),
-        );
+        c.input
+          ..setRightStick((x: randomByte(), y: randomByte()))
+          ..setLeftStick((x: randomByte(), y: randomByte()));
       case final command when btns.containsKey(command):
         final btn = btns[command]!;
         final pressed = !c.input.pressed(btn.bit);
-        c.input.setInput(btn.bit, pressed);
+        c.input.setInput(btn, pressed);
     }
     stdout.writeln(c.input);
   });
