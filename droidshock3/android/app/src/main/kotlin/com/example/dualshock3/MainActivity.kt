@@ -1,16 +1,28 @@
 package com.example.droidshock3
 
 import android.hardware.input.InputManager
+import android.os.Bundle
 import android.os.Handler
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import org.flame_engine.gamepads_android.GamepadsCompatibleActivity
 
 class MainActivity : FlutterActivity(), GamepadsCompatibleActivity {
     var keyListener: ((KeyEvent) -> Boolean)? = null
     var motionListener: ((MotionEvent) -> Boolean)? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+        )
+    }
 
     override fun dispatchGenericMotionEvent(motionEvent: MotionEvent): Boolean {
         return motionListener?.invoke(motionEvent) ?: false
