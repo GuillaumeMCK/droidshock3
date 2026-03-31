@@ -1,5 +1,3 @@
-import 'package:ffsds3/ffsds3.dart';
-
 import '/bridge/bridge_cubit.dart';
 import '/common/common.dart';
 
@@ -16,19 +14,15 @@ class PlayerId extends HookWidget {
     child: SizedBox.square(dimension: 8),
   );
 
-  static const List<LedPattern> _off = [.off(), .off(), .off(), .off()];
+  static const List<bool> _off = [false, false, false, false];
 
   @override
   Widget build(BuildContext context) {
     final ShadThemeData(:textTheme) = context.theme;
     final bridge = context.read<BridgeCubit>();
-    final ledPatterns = useState<List<LedPattern>>(_off);
+    final leds = useState<List<bool>>(_off);
     usePeriodic(250.ms, () {
-      if (bridge.state is! BridgeConnected) {
-        ledPatterns.value = _off;
-        return;
-      }
-      ledPatterns.value = bridge.output.ledPatterns;
+      leds.value = bridge.ledStates;
     });
     return DefaultTextStyle(
       style: textTheme.muted.mono.xxs,
@@ -39,12 +33,13 @@ class PlayerId extends HookWidget {
           for (var i = 0; i < 4; i++)
             Column(
               spacing: 4,
+              mainAxisSize: .min,
               children: [
                 Text('${i + 1}'),
-                switch (ledPatterns.value[i].isOff) {
-                  true => _inactive,
-                  false => _active,
-                },
+                AnimatedSwitcher(
+                  duration: 150.ms,
+                  child: leds.value[i] ? _active : _inactive,
+                ),
               ],
             ),
         ],
