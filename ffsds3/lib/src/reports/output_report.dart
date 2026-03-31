@@ -85,6 +85,19 @@ final class LedPattern {
       'LedPattern('
       'enabled=$timeEnabled, disabled=$timeDisabled, '
       'on=$timeOn, off=$timeOff, repeat=$repeatCount)';
+
+  @override
+  bool operator ==(Object other) =>
+      other is LedPattern &&
+      timeEnabled == other.timeEnabled &&
+      timeDisabled == other.timeDisabled &&
+      timeOn == other.timeOn &&
+      timeOff == other.timeOff &&
+      repeatCount == other.repeatCount;
+
+  @override
+  int get hashCode =>
+      Object.hash(timeEnabled, timeDisabled, timeOn, timeOff, repeatCount);
 }
 
 /// DualShock 3 Output Report (Parsed from Host)
@@ -135,15 +148,15 @@ final class OutputReport with USBGadgetLogger {
 
   /// 4-bit LED mask derived from [ledFlagByte] (bits 1-4 shifted right by 1).
   /// Bit 0 = LED1, bit 1 = LED2, bit 2 = LED3, bit 3 = LED4.
-  int get ledMask => (ledFlagByte >> 1) & 0x0F;
+  int get ledMask => ledFlagByte.bitMask(1, 4);
 
   /// Active state of each of the four LEDs, indexed 0 (LED1) to 3 (LED4).
-  List<bool> get ledStates => [
+  List<bool> get ledStates => .from([
     ledMask.bitFlag(0),
     ledMask.bitFlag(1),
     ledMask.bitFlag(2),
     ledMask.bitFlag(3),
-  ];
+  ], growable: false);
 
   /// Returns the [LedPattern] for the given [ledIndex] (0 = LED1 … 3 = LED4).
   LedPattern ledPattern(int ledIndex) {
@@ -159,7 +172,12 @@ final class OutputReport with USBGadgetLogger {
   }
 
   /// Blink patterns for all four LEDs (indices 0-3).
-  List<LedPattern> get ledPatterns => List.generate(4, ledPattern);
+  List<LedPattern> get ledPatterns => .from([
+    ledPattern(0),
+    ledPattern(1),
+    ledPattern(2),
+    ledPattern(3),
+  ], growable: false);
 
   @override
   String toString() =>
