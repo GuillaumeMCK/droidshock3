@@ -25,7 +25,7 @@ class GamepadsCubit extends Cubit<GamepadsState> with AppLogger {
     emit(newState..selected ??= newState.firstOrNull);
   }
 
-  void pair(GamepadController gamepad) {
+  void select(GamepadController gamepad) {
     emit(state.clone..selected = gamepad);
   }
 

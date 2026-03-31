@@ -9,7 +9,8 @@ class GamepadSelectorPage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gamepads = useBlocState(context.read<GamepadsCubit>());
+    final cubit = context.read<GamepadsCubit>();
+    final gamepads = useBlocState(cubit);
 
     usePostFrameEffect(() {
       if (gamepads.isEmpty) {
@@ -35,7 +36,7 @@ class GamepadSelectorPage extends HookWidget {
                 ShadButton.secondary(
                   size: .lg,
                   onPressed: () {
-                    context.read<GamepadsCubit>().pair(gamepad);
+                    cubit.select(gamepad);
                     context.router.back();
                   },
                   leading: ShadBadge(child: Text(gamepad.id)),
