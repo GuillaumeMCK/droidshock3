@@ -1,4 +1,4 @@
-name: dualshock3
+name: droidshock3
 
 environment:
   sdk: ^3.11.0

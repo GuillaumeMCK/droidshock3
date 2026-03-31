@@ -1,4 +1,4 @@
-package com.example.dualshock3
+package com.example.droidshock3
 
 import android.hardware.input.InputManager
 import android.os.Handler

@@ -1,4 +1,4 @@
-import 'package:dualshock3/app/app_router.dart';
+import 'package:droidshock3/app/app_router.dart';
 
 import '/app/app_shell.dart' show AppSize;
 import '/common/common.dart';

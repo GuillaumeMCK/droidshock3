@@ -1,3 +1,3 @@
-# dualshock3
+# droidshock3
 
 A new Flutter project.
