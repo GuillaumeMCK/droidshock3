@@ -22,7 +22,7 @@ dependencies:
   leancode_hooks: ^0.1.2+1
   path_provider: ^2.1.5
   root_plus: ^1.1.0
-  shadcn_ui: ^0.52.1
+  shadcn_ui: ^0.53.1
   gamepads: ^0.1.9
   sensors_plus: ^7.0.0
 
@@ -61,5 +61,4 @@ scripts:
   gen:
     dart pub get;
     dart run build_runner build --delete-conflicting-outputs;
-    dart run flutter_native_splash:create;
 

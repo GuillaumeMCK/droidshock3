@@ -906,10 +906,10 @@ packages:
     dependency: "direct main"
     description:
       name: shadcn_ui
-      sha256: "477eae35e7ce4710b83d7db453f13fb3b51694fbb9af7eed774e01e0c7f29da0"
+      sha256: "342da1212a10d662a8a1e7c99a09b2c806303be24f06a7a4921159a130b6d06d"
       url: "https://pub.dev"
     source: hosted
-    version: "0.52.3"
+    version: "0.53.3"
   shelf:
     dependency: transitive
     description:
@@ -1031,10 +1031,10 @@ packages:
     dependency: transitive
     description:
       name: two_dimensional_scrollables
-      sha256: "60c1509eb0f1611e1f4478df574116597b0528c84a753bec2a3ad4c5c9e9f41b"
+      sha256: "45f77f28f3f084ac3c79f74b075c4d719937a3972e71191efc533d6f9487c045"
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.0"
+    version: "0.4.1"
   typed_data:
     dependency: transitive
     description:
@@ -1063,10 +1063,10 @@ packages:
     dependency: transitive
     description:
       name: usb_gadget
-      sha256: "6eea523dbe8d7827891b14b16232ccc60d9d149e9238ae514d34e319fd67c35d"
+      sha256: "71ebea44682476eaa5941f30ebb89f5bc7c39e9fbb5fb6120f8584e8b303873b"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.1"
+    version: "1.0.2"
   using:
     dependency: transitive
     description:
@@ -1079,10 +1079,10 @@ packages:
     dependency: transitive
     description:
       name: vector_graphics
-      sha256: "7076216a10d5c390315fbe536a30f1254c341e7543e6c4c8a815e591307772b1"
+      sha256: "81da85e9ca8885ade47f9685b953cb098970d11be4821ac765580a6607ea4373"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.20"
+    version: "1.1.21"
   vector_graphics_codec:
     dependency: transitive
     description:
