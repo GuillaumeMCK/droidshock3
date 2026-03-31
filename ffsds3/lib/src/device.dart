@@ -104,7 +104,7 @@ final class Dualshock3 extends HIDFunctionFs implements Board {
     super.onEnable();
     _epInSub ??= epIn.writeWhile(
       condition: () => features.inputStreamingEnabled && state == .enabled,
-      data: () => input.bytes,
+      data: () => .fromList([0x01, ...input.bytes]),
     );
     _epOutSub ??= epOut.stream.listen(
       (bytes) => switch (bytes) {
@@ -133,7 +133,7 @@ final class Dualshock3 extends HIDFunctionFs implements Board {
   @override
   Uint8List onGetReport(HIDReportType type, int reportId) {
     return switch ((type, reportId)) {
-      (.input, 0x01) => input.bytes,
+      (.input, 0x01) => .fromList([0x01, ...input.bytes]),
       (.feature, 0x01) => features.getControllerInfo(),
       (.feature, 0xF1) => features.getEepromBlock(),
       (.feature, 0xF2) => features.getDeviceInfo(),
