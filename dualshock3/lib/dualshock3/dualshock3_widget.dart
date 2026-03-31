@@ -1,47 +1,68 @@
 import '/app/app_shell.dart';
 
+import '/bridge/bridge_cubit.dart';
 import '/common/common.dart';
 
 import 'widgets/display/pad.dart';
 import 'widgets/inputs/inputs.dart';
 
 class RightPad extends StatelessWidget {
+  const RightPad({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final Size(:height, :width) = context.watch<AppSize>();
-    final size = width / 8;
+    final Size(:width) = context.watch<AppSize>();
+    final bridge = context.read<BridgeCubit>();
+    final btnSize = width / 8;
     return Stack(
       alignment: .center,
       clipBehavior: .none,
       children: [
-        Pad(dimension: size * 3.25),
+        Pad(dimension: btnSize * 3.25),
         Positioned.fill(
           child: Joystick(
             size: width / 1.5,
             knobSize: width / 7,
-            onPressed: (isPressed) => print('double tap $isPressed'),
-            onPositionChanged: (position) => print('position $position'),
+            onPressed: (value) => bridge.emitReport(.r3, value),
+            onPositionChanged: (value) => bridge
+              ..setRightStick((
+                x: (value.dx + 1) / 2 * 255,
+                y: (value.dy + 1) / 2 * 255,
+              ))
+              ..emitReport(),
           ),
         ),
         SizedBox.square(
-          dimension: size * 3,
+          dimension: btnSize * 3,
           child: Stack(
             children: [
               Align(
                 alignment: .topCenter,
-                child: TriangleButton(size: size, onPressed: (isPressed) {}),
+                child: TriangleButton(
+                  size: btnSize,
+                  onPressed: (value) => bridge.emitReport(.triangle, value),
+                ),
               ),
               Align(
                 alignment: .centerLeft,
-                child: SquareButton(size: size, onPressed: (isPressed) {}),
+                child: SquareButton(
+                  size: btnSize,
+                  onPressed: (value) => bridge.emitReport(.square, value),
+                ),
               ),
               Align(
                 alignment: .centerRight,
-                child: CircleButton(size: size, onPressed: (isPressed) {}),
+                child: CircleButton(
+                  size: btnSize,
+                  onPressed: (value) => bridge.emitReport(.circle, value),
+                ),
               ),
               Align(
                 alignment: .bottomCenter,
-                child: CrossButton(size: size, onPressed: (isPressed) {}),
+                child: CrossButton(
+                  size: btnSize,
+                  onPressed: (value) => bridge.emitReport(.cross, value),
+                ),
               ),
             ],
           ),
@@ -52,53 +73,61 @@ class RightPad extends StatelessWidget {
 }
 
 class LeftPad extends StatelessWidget {
+  const LeftPad({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final Size(:height, :width) = context.watch<AppSize>();
-    final size = width / 8;
+    final Size(:width) = context.watch<AppSize>();
+    final bridge = context.read<BridgeCubit>();
+    final btnSize = width / 8;
     return Stack(
       alignment: .center,
       clipBehavior: .none,
       children: [
-        Pad(dimension: size * 3.25),
+        Pad(dimension: btnSize * 3.25),
         Positioned.fill(
           child: Joystick(
             size: width / 1.5,
             knobSize: width / 7,
-            onPressed: (isPressed) => print('double tap $isPressed'),
-            onPositionChanged: (position) => print('position $position'),
+            onPressed: (value) => bridge.emitReport(.l3, value),
+            onPositionChanged: (value) => bridge
+              ..setLeftStick((
+                x: (value.dx + 1) / 2 * 255,
+                y: (value.dy + 1) / 2 * 255,
+              ))
+              ..emitReport(),
           ),
         ),
         SizedBox.square(
-          dimension: size * 3,
+          dimension: btnSize * 3,
           child: Stack(
             children: [
               Align(
                 alignment: .topCenter,
                 child: DirectionButton.down(
-                  size: size,
-                  onPressed: (isPressed) {},
+                  size: btnSize,
+                  onPressed: (value) => bridge.emitReport(.up, value),
                 ),
               ),
               Align(
                 alignment: .centerLeft,
                 child: DirectionButton.right(
-                  size: size,
-                  onPressed: (isPressed) {},
+                  size: btnSize,
+                  onPressed: (value) => bridge.emitReport(.left, value),
                 ),
               ),
               Align(
                 alignment: .centerRight,
                 child: DirectionButton.left(
-                  size: size,
-                  onPressed: (isPressed) {},
+                  size: btnSize,
+                  onPressed: (value) => bridge.emitReport(.right, value),
                 ),
               ),
               Align(
                 alignment: .bottomCenter,
                 child: DirectionButton.up(
-                  size: size,
-                  onPressed: (isPressed) {},
+                  size: btnSize,
+                  onPressed: (value) => bridge.emitReport(.down, value),
                 ),
               ),
             ],
@@ -109,52 +138,102 @@ class LeftPad extends StatelessWidget {
   }
 }
 
-class Dualshock3Widget extends StatelessWidget {
+class Triggers extends StatelessWidget {
+  const Triggers({super.key});
+
   @override
   Widget build(BuildContext context) {
     final ShadThemeData(:colorScheme, :textTheme) = context.theme;
-    final Size(:height, :width) = context.watch<AppSize>();
-    final size = width / 3.5;
-    return Padding(
+    final triggerSize = context.watch<AppSize>().width / 3.5;
+    final bridge = context.read<BridgeCubit>();
+
+    return Row(
+      mainAxisAlignment: .spaceBetween,
+      children: [
+        Container(
+          padding: .all(6),
+          decoration: BoxDecoration(
+            color: colorScheme.ds3Pad,
+            borderRadius: .circular(8),
+          ),
+          child: Column(
+            mainAxisSize: .min,
+            spacing: 4,
+            children: [
+              LButton(
+                2,
+                width: triggerSize,
+                onPressed: (value) => bridge.emitReport(.l2, value),
+              ),
+              LButton(
+                1,
+                width: triggerSize,
+                onPressed: (value) => bridge.emitReport(.l1, value),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: .all(6),
+          decoration: BoxDecoration(
+            color: colorScheme.ds3Pad,
+            borderRadius: .circular(8),
+          ),
+          child: Column(
+            mainAxisSize: .min,
+            spacing: 4,
+            children: [
+              RButton(
+                2,
+                width: triggerSize,
+                onPressed: (value) => bridge.emitReport(.r2, value),
+              ),
+              RButton(
+                1,
+                width: triggerSize,
+                onPressed: (value) => bridge.emitReport(.r1, value),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class CenterControls extends StatelessWidget {
+  const CenterControls({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final Size(:width) = context.watch<AppSize>();
+    final bridge = context.read<BridgeCubit>();
+    return Row(
+      spacing: 16,
+      mainAxisAlignment: .center,
+      children: [
+        SelectButton(onPressed: (value) => bridge.emitReport(.select, value)),
+        PSButton(
+          size: width / 12,
+          onPressed: (value) => bridge.emitReport(.ps, value),
+        ),
+        StartButton(onPressed: (value) => bridge.emitReport(.start, value)),
+      ],
+    );
+  }
+}
+
+class Dualshock3Widget extends StatelessWidget {
+  const Dualshock3Widget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
       padding: .symmetric(horizontal: 8),
       child: Column(
         mainAxisSize: .max,
         children: [
-          Row(
-            mainAxisAlignment: .spaceBetween,
-            children: [
-              Container(
-                padding: .all(6),
-                decoration: BoxDecoration(
-                  color: colorScheme.ds3Pad,
-                  borderRadius: .circular(8),
-                ),
-                child: Column(
-                  mainAxisSize: .min,
-                  spacing: 4,
-                  children: [
-                    LButton(2, width: size, onPressed: (isPressed) {}),
-                    LButton(1, width: size, onPressed: (isPressed) {}),
-                  ],
-                ),
-              ),
-              Container(
-                padding: .all(6),
-                decoration: BoxDecoration(
-                  color: colorScheme.ds3Pad,
-                  borderRadius: .circular(8),
-                ),
-                child: Column(
-                  mainAxisSize: .min,
-                  spacing: 4,
-                  children: [
-                    RButton(2, width: size, onPressed: (isPressed) {}),
-                    RButton(1, width: size, onPressed: (isPressed) {}),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          Triggers(),
           Expanded(
             child: Row(
               mainAxisAlignment: .spaceBetween,
@@ -162,15 +241,7 @@ class Dualshock3Widget extends StatelessWidget {
               children: [LeftPad(), RightPad()],
             ),
           ),
-          Row(
-            spacing: 16,
-            mainAxisAlignment: .center,
-            children: [
-              SelectButton(onPressed: (isPressed) {}),
-              PSButton(size: width / 12, onPressed: (isPressed) {}),
-              StartButton(onPressed: (isPressed) {}),
-            ],
-          ),
+          CenterControls(),
         ],
       ),
     );
