@@ -47,9 +47,9 @@ class GamepadState {
     final keyA = _keyFor(a);
     final keyB = _keyFor(b);
     if (keyA != null && keyB != null) {
-      final tmp = _mapping[keyA]!;
-      _mapping[keyA] = _mapping[keyB]!;
-      _mapping[keyB] = tmp;
+      final tmp = _mapping[keyA];
+      _mapping[keyA] = _mapping[keyB] ?? defaultMapping[keyB]!;
+      _mapping[keyB] = tmp ?? defaultMapping[keyA]!;
     }
   }
 
