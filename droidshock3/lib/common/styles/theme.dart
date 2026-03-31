@@ -114,7 +114,7 @@ ShadThemeData _themeData(bool isDark) {
 }
 
 const _buttonsSizes = ShadButtonSizesTheme(
-  sm: ShadButtonSizeTheme(height: 30, padding: .symmetric(horizontal: 10)),
+  sm: ShadButtonSizeTheme(height: 36, padding: .symmetric(horizontal: 10)),
   regular: ShadButtonSizeTheme(height: 40, padding: .symmetric(horizontal: 12)),
   lg: ShadButtonSizeTheme(height: 46, padding: .symmetric(horizontal: 14)),
 );
