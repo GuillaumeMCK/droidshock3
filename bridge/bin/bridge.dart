@@ -20,25 +20,30 @@ void main(List<String> args) => runZonedGuarded(
 
     File? processFile;
     int? clientPid;
+    String? usbConfigBak;
 
-    // Parse args: --process-path <path>  --client-pid <pid>
     for (var i = 0; i < args.length - 1; i++) {
       switch (args[i]) {
         case '--process-path':
           processFile = File(args[i + 1]);
         case '--client-pid':
           clientPid = int.tryParse(args[i + 1]);
+        case '--usb-config-bak':
+          usbConfigBak = args[i + 1];
       }
     }
     processFile ??= File(kProcessPath);
 
-    await Ds3Bridge.start(clientPid: clientPid).then((server) async {
-      stdout.writeln(
-        'listening on ${InternetAddress.anyIPv4.address}:${server.port}',
-      );
-      processFile!.writeAsStringSync('$pid:${server.port}');
-      await server.released;
-    });
+    final server = await Ds3Bridge.start(
+      clientPid: clientPid,
+      usbConfigBak: usbConfigBak,
+    );
+    stdout.writeln(
+      'listening on ${InternetAddress.anyIPv4.address}:${server.port}',
+    );
+    await processFile.writeAsString('$pid:${server.port}');
+    await server.released;
+    await processFile.delete();
   },
   (err, st) {
     stderr.writeln('--- Bridge encountered a fatal error ---');

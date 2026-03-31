@@ -61,32 +61,38 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
       return log?.warn('Setup already in progress or completed');
     }
     emit(.setup);
-    final tmp = '$fTmpDir/bridge';
+    final exeTmpPath = '$fTmpDir/bridge';
     final bytes = await rootBundle.load(Assets.bridge);
-    await File(tmp).writeAsBytes(bytes.buffer.asUint8List());
+    await File(exeTmpPath).writeAsBytes(bytes.buffer.asUint8List());
+    await RootPlus.executeRootCommand('''
+      if [ -f $processPath ]; then
+        sleep ${kPidPollInterval.inSeconds}
+        rm -f $processPath
+      fi
+      
+      if [ -d $kBridgeDir ]; then
+        rm -rf $kBridgeDir
+      fi
+      
+      if [ ! -d /sys/kernel/config/usb_gadget ]; then
+        mount -t configfs none /sys/kernel/config
+      fi
+      
+      if [ -z "\$USB_CONFIG_BAK" ]; then
+        export USB_CONFIG_BAK=\$(getprop sys.usb.config)
+      fi
+            
+      setprop sys.usb.config none
 
-    if (File(processPath).existsSync() == false) {
-      await RootPlus.executeRootCommand('''
-        if [ ! -d /sys/kernel/config/usb_gadget ]; then
-          mount -t configfs none /sys/kernel/config
-        fi
-        
-        if [ -z "\$USB_CONFIG_BAK" ]; then
-          export USB_CONFIG_BAK=\$(getprop sys.usb.config)
-        fi
-              
-        setprop sys.usb.config none
-  
-        mkdir -p $kBridgeDir
-        mv $tmp $kExePath
-        chmod +x $kExePath
-  
-        export LD_LIBRARY_PATH=$kBridgeDir
-        nohup $kExePath --process-path $processPath --client-pid $pid > $logPath 2>&1 &
-        
-        timeout 3 sh -c 'until [ -f $processPath ]; do sleep 0.1; done'
-      ''');
-    }
+      mkdir -p $kBridgeDir
+      mv $exeTmpPath $kExePath
+      chmod +x $kExePath
+
+      export LD_LIBRARY_PATH=$kBridgeDir
+      nohup $kExePath --process-path $processPath --client-pid $pid --usb-config-bak "\$USB_CONFIG_BAK" > $logPath 2>&1 &
+    
+      timeout 3 sh -c 'until [ -f $processPath ]; do sleep 0.1; done'
+    ''');
     emit(.ready);
   }, _onError);
 

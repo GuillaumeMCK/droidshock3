@@ -12,14 +12,20 @@ import 'session.dart';
 const kBridgeDir = '/data/local/tmp/ds3_bridge';
 
 /// How often to check whether the client process is still alive.
-const _kPidPollInterval = Duration(seconds: 2);
+const kPidPollInterval = Duration(seconds: 1);
 
 /// How often to push DS3 output reports to the connected client.
 const _kOutputInterval = Duration(milliseconds: 10);
 
 /// Single-client TCP bridge between a DualShock 3 USB gadget and a Flutter client.
 final class Ds3Bridge with Releasable, BridgeLogger {
-  Ds3Bridge._(this._server, this._gadget, this._ds3, {int? clientPid}) {
+  Ds3Bridge._(
+    this._server,
+    this._gadget,
+    this._ds3, {
+    int? clientPid,
+    String? usbConfigBak,
+  }) : _usbConfigBak = usbConfigBak {
     _server.listen(_onIncoming, onDone: release, cancelOnError: false);
     _outputTimer = .periodic(_kOutputInterval, (_) {
       _onSend(Op.outputReport, _ds3.output.bytes);
@@ -27,13 +33,19 @@ final class Ds3Bridge with Releasable, BridgeLogger {
     if (clientPid != null) _watchPid(clientPid);
   }
 
-  static Future<Ds3Bridge> start({int? clientPid}) async {
+  static Future<Ds3Bridge> start({int? clientPid, String? usbConfigBak}) async {
     final (gadget, ds3) = createDualshock3();
     late final RawServerSocket server;
     try {
       server = await RawServerSocket.bind(InternetAddress.loopbackIPv4, 0);
       await gadget.register().then((r) => r.bind(defaultUDC));
-      return Ds3Bridge._(server, gadget, ds3, clientPid: clientPid);
+      return Ds3Bridge._(
+        server,
+        gadget,
+        ds3,
+        clientPid: clientPid,
+        usbConfigBak: usbConfigBak,
+      );
     } catch (_) {
       await server.close();
       await gadget.remove();
@@ -47,6 +59,7 @@ final class Ds3Bridge with Releasable, BridgeLogger {
   final Completer<void> _released = .new();
 
   Session? _session;
+  String? _usbConfigBak;
   Timer? _outputTimer;
   Timer? _watchdogTimer;
 
@@ -100,17 +113,22 @@ final class Ds3Bridge with Releasable, BridgeLogger {
 
   void _watchPid(int pid) {
     log.info('Watching client PID $pid');
-    _watchdogTimer = .periodic(_kPidPollInterval, (_) async {
+    _watchdogTimer = .periodic(kPidPollInterval, (_) async {
       if (!Directory('/proc/$pid').existsSync()) {
-        log.warn('Client PID $pid gone — shutting down');
-        _watchdogTimer?.cancel();
-        _watchdogTimer = null;
         await release();
       }
     });
   }
 
-  void update(Uint8List frame) {}
+  Future<void> _restoreUsbConfig() async {
+    if (_usbConfigBak == null) return;
+    await Process.run('sh', [
+      '-c',
+      'setprop sys.usb.config "$_usbConfigBak"',
+    ]).catchError((err) {
+      log.error('Failed to restore USB config:', err);
+    });
+  }
 
   @override
   Future<void> release() async {
@@ -128,6 +146,8 @@ final class Ds3Bridge with Releasable, BridgeLogger {
 
     await _server.close();
     await _gadget.remove();
+
+    await _restoreUsbConfig();
     _released.complete();
   }
 }
