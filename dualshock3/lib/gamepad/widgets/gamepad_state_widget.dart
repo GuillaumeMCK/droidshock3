@@ -11,7 +11,7 @@ final class GamepadStateWidget extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final Size(:height, :width) = context.watch<AppSize>();
-    final gamepads = useBlocBuilder(context.read<GamepadsCubit>());
+    final gamepads = useBlocState(context.read<GamepadsCubit>());
 
     usePostFrameEffect(() {
       if (gamepads.length > 1) {
@@ -38,7 +38,6 @@ final class _SelectedGamepad extends HookWidget {
   Widget build(BuildContext context) {
     final ShadThemeData(:colorScheme, :textTheme) = context.theme;
     final gamepad = useBlocState(context.read<GamepadsCubit>()).selected;
-    final Size(:height, :width) = context.watch<AppSize>();
 
     final (color1, color2) = useMemoized(
       () => (colorScheme.primary.shiftLightness(), colorScheme.primary),
@@ -89,7 +88,6 @@ final class _NoGamepadsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ShadThemeData(:textTheme, :colorScheme) = context.theme;
-    final Size(:height, :width) = context.watch<AppSize>();
     return Column(
       spacing: 8,
       mainAxisAlignment: .center,
