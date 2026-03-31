@@ -19,9 +19,11 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
   Stream<Uint8List>? _outputStream;
   StreamSubscription<Uint8List>? _listener;
 
-  final InputReport input = .new();
-  final OutputReport output = .new();
+  final InputReport _inputReport = .new();
+  final OutputReport _outputReport = .new();
   final List<int> _buffer = [];
+
+  List<bool> get ledStates => _outputReport.ledStates;
 
   static const kExePath = '$kBridgeDir/bridge';
   static final logPath = '$fTmpDir/bridge.log';
@@ -30,7 +32,12 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
   void _onOutput(Uint8List data) {
     _buffer.addAll(data);
     while (_buffer.length >= Op.frameLength) {
-      output.update(_buffer.sublist(0, Op.frameLength));
+      switch (Op.parseServerFrame(_buffer[0])) {
+        case .outputReport:
+          _outputReport.update(_buffer.sublist(1, Op.frameLength));
+        default:
+          throw UnimplementedError();
+      }
       _buffer.removeRange(0, Op.frameLength);
     }
   }
@@ -40,10 +47,14 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
       return log?.warn('Send input called when not connected');
     }
     if (input != null && value != null) {
-      this.input.setInput(input, value);
+      _inputReport.setInput(input, value);
     }
-    _socket?.add(this.input.bytes);
+    _socket?.add([Op.inputReport.byte, ..._inputReport.bytes]);
   }
+
+  void setLeftStick(DS3Joystick value) => _inputReport.setLeftStick(value);
+
+  void setRightStick(DS3Joystick value) => _inputReport.setRightStick(value);
 
   Future<void> setup() async => runZonedGuarded(() async {
     if (state.type case .setup || .ready || .connected) {
@@ -71,7 +82,7 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
         chmod +x $kExePath
   
         export LD_LIBRARY_PATH=$kBridgeDir
-        nohup $kExePath --process-path $processPath > $logPath 2>&1 &
+        nohup $kExePath --process-path $processPath --client-pid $pid > $logPath 2>&1 &
         
         timeout 3 sh -c 'until [ -f $processPath ]; do sleep 0.1; done'
       ''');
@@ -89,14 +100,14 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
       throw Exception('Failed to start bridge, no process info found');
     }
 
-    final [pid, port] = [...infos.split(':').map(int.parse)];
+    final [bridgePid, port] = [...infos.split(':').map(int.parse)];
     _socket ??= await Socket.connect(InternetAddress.loopbackIPv4, port);
     _outputStream ??= _socket?.asBroadcastStream(
       onListen: (subscription) => _listener ??= subscription,
       onCancel: (subscription) => _listener = null,
     )?..listen(_onOutput, onError: _onError);
 
-    log?.info('Connected to bridge (PID: $pid, Port: $port)');
+    log?.info('Connected to bridge (PID: $bridgePid, Port: $port)');
     emit(.connected(port));
   }, _onError);
 

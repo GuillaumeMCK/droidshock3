@@ -9,10 +9,13 @@
 /// |----------|--------|--------------------------------|
 /// | [output] | `any`  | 48-byte output report          |
 enum Op {
-  /// Dualshock3 input report sent by the client.
+  /// DS3 input report sent by the client (bytes 1–48 = HID payload).
   inputReport(0x01),
 
-  /// Graceful shutdown request sent by the client.
+  /// DS3 output report sent by the server (bytes 1–48 = HID payload).
+  outputReport(0x10),
+
+  /// Graceful shutdown request sent by the client (payload ignored).
   shutdown(0xFF);
 
   const Op(this.byte);
@@ -20,13 +23,20 @@ enum Op {
   /// Raw opcode byte on the wire.
   final int byte;
 
-  static final _byByte = {
-    inputReport.byte: inputReport,
-    shutdown.byte: shutdown,
+  static final _client = {
+    inputReport.byte: Op.inputReport,
+    shutdown.byte: Op.shutdown,
   };
 
-  /// Returns the [Op] matching [b], or `null` if unrecognised.
-  static Op? fromByte(int b) => _byByte[b];
+  static final _server = {outputReport.byte: Op.outputReport};
 
-  static const frameLength = 48;
+  /// Returns the [Op] matching [b], or `null` if unrecognised.
+  static Op? parseClientFrame(int b) => _client[b];
+
+  /// Returns the [Op] matching [b], or `null` if unrecognised.
+  static Op? parseServerFrame(int b) => _server[b];
+
+  /// Fixed frame length for every message in both directions.
+  /// [ op + payload ]
+  static const frameLength = 49;
 }
