@@ -1,30 +1,35 @@
 /// DualShock 3 button definitions with bit positions and analog byte offsets.
 ///
 /// Each button has:
-/// - A bit position in the button bitfield (bytes 2-4 of input report)
-/// - An analog byte offset for pressure-sensitive buttons (or -1 if not analog)
+/// - A bit position in the button bitfield (bytes 1-3 of input report)
+/// - An analog byte offset for pressure-sensitive buttons
 ///
 /// ## Input Layout
 ///
-/// **Digital Inputs (bytes 2-4):**
-/// - Byte 2 (bits 0-7): SELECT, L3, R3, START, UP, RIGHT, DOWN, LEFT
-/// - Byte 3 (bits 8-15): L2, R2, L1, R1, TRIANGLE, CIRCLE, CROSS, SQUARE
-/// - Byte 4 (bit 16): PS
+/// **Digital Inputs (bytes 1-3):**
+/// - Byte 1 (bits 0-7):  SELECT, L3, R3, START, UP, RIGHT, DOWN, LEFT
+/// - Byte 2 (bits 8-15): L2, R2, L1, R1, TRIANGLE, CIRCLE, CROSS, SQUARE
+/// - Byte 3 (bit 16):    PS
 ///
-/// **Analog Pressure (bytes 10-25):**
-/// - All buttons except PS have analog pressure values (0-255)
-/// - Byte offsets: 10-25 for the 16 analog buttons
+/// **Analog Pressure (bytes 14-25):**
+/// Pressure bytes are a fixed layout independent of bit positions:
+///   14=Up,    15=Right, 16=Down,     17=Left,
+///   18=L2,    19=R2,   20=L1,       21=R1,
+///   22=Triangle, 23=Circle, 24=Cross, 25=Square
 ///
 /// ## Example
 ///
 /// ```dart
 /// // Check if button has analog support
-/// if (Input.cross.hasAnalog) {
-///   print('Cross button pressure byte: ${Input.cross.analogByte}');
+/// if (DS3Input.cross.hasAnalog) {
+///   print('Cross pressure byte: ${DS3Input.cross.analogByte}'); // 24
 /// }
 ///
-/// // Get bit mask for button
-/// final mask = Input.triangle.bitMask; // 1 << 12
+/// // Get bit position for button
+/// final bit = DS3Input.triangle.bit; // 12
+///
+/// // Check a bitmask using IntBitOps
+/// final isPressed = buttonByte.bitFlag(DS3Input.cross.bit);
 /// ```
 enum DS3Input {
   select,
@@ -50,48 +55,56 @@ enum DS3Input {
   rightStickY;
 
   /// Bit position in the button bitfield (0-16).
+  ///
+  /// Valid for [select] through [ps] only. Asserts on stick axes.
+  int get bit {
+    assert(
+      index <= ps.index,
+      '$name is a stick axis and does not have a bit position.',
+    );
+    return index;
+  }
 
-  const DS3Input();
-
-  static const _analogReservedBytes = 10;
-
-  static const List<DS3Input> analogInputs = [
+  /// Fixed analog pressure byte offsets keyed by input.
+  ///
+  /// Matches the DS3 input report layout confirmed by USB inspection.
+  static const Set<DS3Input> _analogByteMap = {
+    up,
+    right,
+    down,
+    left,
     l2,
-    l1,
     r2,
+    l1,
     r1,
     triangle,
     circle,
     cross,
     square,
-    up,
-    right,
-    down,
-    left,
-  ];
+  };
 
-  /// Bit position in the button bitfield (0-16).
-  int get bit => index;
-
-  /// Byte offset for analog pressure value (0-25).
+  /// Byte offset for analog pressure value in the input report.
+  ///
+  /// Only valid when [hasAnalog] is true. Asserts otherwise.
   int get analogByte {
     assert(
       hasAnalog,
-      'Input $name does not support analog pressure, but analogByte '
-      'tried to access it. Check hasAnalog before accessing analogByte.',
+      '$name does not support analog pressure. '
+      'Check hasAnalog before accessing analogByte.',
     );
-    return bit + _analogReservedBytes;
+    return bit + 9;
   }
 
-  /// Byte offset for analog pressure value (0-25), or -1 if not analog.
-  // final int analogByte;
+  /// Whether this input has an analog pressure byte in the report.
+  bool get hasAnalog => _analogByteMap.contains(this);
 
-  /// Whether the button has analog pressure support.
-  bool get hasAnalog => analogInputs.contains(this);
-
-  /// Bit mask for the button (1 << bit).
+  /// Bit mask for use in the button bitfield (1 << bit).
   int get bitMask => 1 << bit;
+
+  bool get isLeftStick => this == leftStickX || this == leftStickY;
+
+  bool get isRightStick => this == rightStickX || this == rightStickY;
 }
 
-/// Joystick position with x and y coordinates.
-typedef Joystick = ({int x, int y});
+/// Joystick position with x and y coordinates (0-255, center = 127).
+typedef DS3Joystick = ({num x, num y});
