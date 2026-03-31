@@ -313,7 +313,7 @@ final class FeatureReport with USBGadgetLogger {
   ///
   /// Throws [RangeError] if [data] is too short to contain a MAC address.
   void setPairedHost(Uint8List data) {
-    _board.eeprom.write(bank: 0, 0x6C, data);
+    _board.pairedAddr.setAll(0, data.sublist(2, 8));
     log?.info(
       'Paired host MAC address set to: '
       '${_board.pairedAddr.map((b) => b.toHex(prefix: false, padding: 2)).join(':')}'
