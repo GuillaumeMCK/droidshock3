@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:root_plus/root_plus.dart';
 
+import '/bridge/bridge_cubit.dart';
 import '/app/app_bloc_observer.dart';
 import '/common/common.dart';
 import '/env.dart';
@@ -60,26 +62,27 @@ class BootstrapCubit extends Cubit<BootstrapState> with BootstrapLogger {
     FlutterNativeSplash.remove();
     runApp();
 
-    // if (!await _initialize('Root Access', () async {
-    //   final hasRoot = await RootPlus.requestRootAccess();
-    //   if (!hasRoot) throw Exception('Root access denied');
-    // }, timeout: null)) {
-    //   return watcher.stop();
-    // }
+    if (!await _initialize('Root Access', () async {
+      final hasRoot = await RootPlus.requestRootAccess();
+      if (!hasRoot) throw Exception('Root access denied');
+    }, timeout: null)) {
+      return watcher.stop();
+    }
 
-    // final bridgeCubit = getIt<BridgeCubit>();
-    // await _initialize('Bridge Setup', bridgeCubit.setup);
-    // if (bridgeCubit.state case BridgeError(:final error, :final stackTrace)) {
-    //   return emit(BootstrapError('Bridge Setup', error, stackTrace));
-    // }
-    //
-    // await _initialize('Bridge Connection', bridgeCubit.connect);
-    // if (bridgeCubit.state case BridgeError(:final error, :final stackTrace)) {
-    //   return emit(BootstrapError('Bridge Connection', error, stackTrace));
-    // }
+    final bridgeCubit = getIt<BridgeCubit>();
+    await _initialize('Bridge Setup', bridgeCubit.setup);
+    if (bridgeCubit.state case BridgeError(:final error, :final stackTrace)) {
+      return emit(BootstrapError('Bridge Setup', error, stackTrace));
+    }
+
+    await _initialize('Bridge Connection', bridgeCubit.connect);
+    if (bridgeCubit.state case BridgeError(:final error, :final stackTrace)) {
+      return emit(BootstrapError('Bridge Connection', error, stackTrace));
+    }
 
     log?.info('Bootstrap took [${watcher.elapsedMilliseconds}ms]');
     watcher.stop();
+    await Future.delayed(500.ms);
     emit(BootstrapLoaded(elapsed: watcher.elapsed));
   }
 
