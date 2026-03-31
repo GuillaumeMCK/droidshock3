@@ -1,4 +1,4 @@
-package com.example.droidshock3
+package gmck.droidshock3
 
 import android.hardware.input.InputManager
 import android.os.Bundle
