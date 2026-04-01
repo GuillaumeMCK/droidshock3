@@ -2,10 +2,21 @@
 
 A Dart library for emulating a Sony DualShock 3 controller over USB — make sure to check 
 out [`usb_gadget`](https://pub.dev/packages/usb_gadget) before getting started.
-
-> [!NOTE]
-> A capture of real DualShock 3 USB traffic is available at [`capture.pcapng`](capture.pcapng) for 
+> A capture of real DualShock 3 USB traffic is available at [`capture.pcapng`](capture.pcapng) for
 > reference, recorded using [usb-proxy](https://github.com/AristoChen/usb-proxy).
+
+```
+ffsds3 (Dart library)
+        │  usb_gadget
+        │  ConfigFS / FunctionFS
+        ▼
+  Linux USB stack
+        │  USB HID
+        ▼
+   Host (PS3 / PC)
+```
+
+## Quick start
 
 ```dart
 final (gadget, controller) = createDualshock3();
