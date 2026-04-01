@@ -1,8 +1,4 @@
-<div align="center">
-  <img src=".github/showcase.gif" alt="droidshock3 showcase" />
-</div>
-
-# droidshock3
+# Droidshock 3
 
 Turn your rooted Android phone into a Sony DualShock 3 controller. Pair a Bluetooth
 gamepad to relay its inputs, or use the on-screen controls directly — inputs are
@@ -13,6 +9,8 @@ forwarded as authentic DS3 HID reports over USB to a PS3 or PC.
 > Root access is required — ConfigFS and FunctionFS are kernel interfaces gated to root, and on
 > Android the daemon needs to reclaim the UDC from the system USB stack before the gadget
 > can bind.
+
+<img src="showcase.jpg" />
 
 ## How it works
 
@@ -46,8 +44,8 @@ On-screen controls ──┤  droidshock3 (Flutter · Android)
 
 ## Dev-board usage
 
-If you have a dev-board with a UDC port you can use the `ffsds3` CLI directly. 
-Most boards require external power — the PS3 only supplies 100 mA before enumeration completes 
+If you have a dev-board with a UDC port you can use the `ffsds3` CLI directly.
+Most boards require external power — the PS3 only supplies 100 mA before enumeration completes
 (per the USB spec), which may not be enough to boot.
 
 ```bash
