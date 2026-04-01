@@ -16,7 +16,7 @@ On-screen controls ──┤  droidshock3 (Flutter)
             Host (PS3 / PC)
 ```
 
-##### Features
+###### Features
 
 - **On-screen DualShock 3 layout** — buttons, D-pad, dual analogue sticks, triggers.
 - **Bluetooth gamepad pass-through** — pairs any controller and relays its inputs with a
@@ -24,3 +24,8 @@ On-screen controls ──┤  droidshock3 (Flutter)
 - **Input remapping** — swap any two DS3 inputs; restore defaults at any time.
 - **Player LED feedback** — the PS3's output reports are reflected in the on-screen
   player-ID indicator.
+
+###### Ideas
+
+- **Vibration** — blocked upstream; tracked in [#1](https://github.com/GuillaumeMCK/droidshock3/issues/1).
+- **Sixaxis** — phone accelerometer forwarded as DS3 motion data ?
