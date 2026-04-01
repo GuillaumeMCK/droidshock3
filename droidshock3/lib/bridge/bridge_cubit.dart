@@ -117,7 +117,6 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
   Future<void> shutdown() async => runZonedGuarded(() async {
     if (state.type case .connected) {
       _socket?.add(Uint8List(Op.frameLength)..[0] = Op.shutdown.byte);
-      await Future.delayed(const .new(milliseconds: 100));
     }
 
     await _listener?.cancel();
@@ -128,14 +127,10 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
     _buffer.clear();
 
     await RootPlus.executeRootCommand('''
+      sleep ${kPidPollInterval.inSeconds}
       if [ -f $processPath ]; then
         kill \$(cut -d: -f1 $processPath)
         rm -f $processPath
-      fi
-      
-      USB_CONFIG="\$(getprop sys.usb.config)"
-      if [ "\$USB_CONFIG" = "none" ] && [ -n "\$USB_CONFIG_BAK" ]; then
-        setprop sys.usb.config "\$USB_CONFIG_BAK"
       fi
       rm -rf $kBridgeDir
     ''');
