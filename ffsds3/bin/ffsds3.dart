@@ -32,7 +32,6 @@ StreamSubscription<void> _loop(Dualshock3 c) {
     'ps': DS3Input.ps,
     'x': DS3Input.cross,
     'cross': DS3Input.cross,
-    'o': DS3Input.circle,
     'circle': DS3Input.circle,
     'c': DS3Input.circle,
     'square': DS3Input.square,
