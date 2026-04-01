@@ -12,11 +12,6 @@ forwarded as authentic DS3 HID reports over USB to a PS3 or PC.
 > [!IMPORTANT]
 > Root access is required.
 
-> [!CAUTION]
-> The app uses `sys.usb.config` to take over your phone's USB port so `ffsds3` can
-> access the UDC. After closing the app you may need to restart your phone to restore
-> USB functionality such as file sharing or ADB.
-
 ## How it works
 
 ```
