@@ -16,13 +16,21 @@ forwarded as authentic DS3 HID reports over USB to a PS3 or PC.
 
 ```
 Bluetooth gamepad  ──┐
-On-screen controls ──┤  droidshock3 (Flutter)
-                     │  TCP · loopback
-                     ▼
-               bridge (daemon)
-                     │  ffsds3
-                     ▼
-            Host (PS3 / PC)
+On-screen controls ──┤  droidshock3 (Flutter · Android)
+                     │        │
+                     │        │  TCP · loopback
+                     │        ▼
+                     │   bridge (daemon)
+                     │        │  FunctionFS / USB Gadget
+                     │        ▼
+                     │   ffsds3 (Dart library)
+                     │        │  usb_gadget (Dart library)
+                     │        │  ConfigFS / FunctionFS
+                     │        ▼
+                     │   Linux USB stack
+                     │        │  USB HID
+                     │        ▼
+                     └──► Host (PS3 / PC)
 ```
 
 - **[`droidshock3`](droidshock3/README.md)** — Flutter Android app. Provides an
