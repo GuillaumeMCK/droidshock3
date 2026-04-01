@@ -10,7 +10,9 @@ forwarded as authentic DS3 HID reports over USB to a PS3 or PC.
 [Download the APK (arm64)](../../releases/latest).
 
 > [!IMPORTANT]
-> Root access is required.
+> Root access is required — ConfigFS and FunctionFS are kernel interfaces gated to root, and on
+> Android the daemon needs to reclaim the UDC from the system USB stack before the gadget
+> can bind.
 
 ## How it works
 
