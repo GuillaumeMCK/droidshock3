@@ -29,3 +29,6 @@ On-screen controls ──┤  droidshock3 (Flutter)
 
 - **Vibration** — blocked upstream; tracked in [#1](https://github.com/GuillaumeMCK/droidshock3/issues/1).
 - **Sixaxis** — phone accelerometer forwarded as DS3 motion data ?
+- **Persistent remap** — mappings are currently in-memory only and reset when the app restarts.
+- **Localization** — translate UI strings to support multiple languages.
+- **Bluetooth Protocol** — implement the dualshock3 bluetooth protocol ?
