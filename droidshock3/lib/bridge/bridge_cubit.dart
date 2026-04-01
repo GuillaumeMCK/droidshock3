@@ -77,11 +77,8 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
       if [ ! -d /sys/kernel/config/usb_gadget ]; then
         mount -t configfs none /sys/kernel/config
       fi
-      
-      if [ -z "\$USB_CONFIG_BAK" ]; then
-        export USB_CONFIG_BAK=\$(getprop sys.usb.config)
-      fi
-            
+
+      USB_CONFIG_BAK=\$(getprop persist.sys.usb.config)
       setprop sys.usb.config none
 
       mkdir -p $kBridgeDir
