@@ -65,6 +65,10 @@ final class HomeCubit extends Cubit<HomeState> {
     } else {
       _accelSub?.cancel();
       _gyroSub?.cancel();
+      _bridge
+        ..setAccel(0, 0, 0)
+        ..setGyro(0)
+        ..emitReport();
     }
   }
 
