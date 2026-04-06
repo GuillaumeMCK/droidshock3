@@ -170,6 +170,27 @@ final class InputReport {
   /// Right analog stick position (0-255 each axis, center = 127).
   DS3Joystick get rightStick => (x: _bytes[7], y: _bytes[8]);
 
+  /// Sets accelerometer values (X, Y, Z). Center = 511, range 0–1023.
+  void setAccel({int? x, int? y, int? z}) {
+    if (x != null) _bytes.setRange(40, 42, x.toBytes(2));
+    if (y != null) _bytes.setRange(42, 44, y.toBytes(2));
+    if (z != null) _bytes.setRange(44, 46, z.toBytes(2));
+  }
+
+
+  /// Gets accelerometer values (X, Y, Z).
+  (int, int, int) get accel => (
+    (_bytes[40] << 8) | _bytes[41],
+    (_bytes[42] << 8) | _bytes[43],
+    (_bytes[44] << 8) | _bytes[45],
+  );
+
+  /// Sets gyroscope Z value. Center = 511, range 0–1023.
+  set gyroZ(int value) => _bytes.setRange(46, 48, value.toBytes(2));
+
+  /// Gets gyroscope Z value.
+  int get gyroZ => (_bytes[46] << 8) | _bytes[47];
+
   @override
   String toString() {
     final buffer = StringBuffer()
