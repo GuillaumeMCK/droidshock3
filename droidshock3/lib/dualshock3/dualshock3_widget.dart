@@ -2,6 +2,7 @@ import '/app/app_shell.dart';
 
 import '/bridge/bridge_cubit.dart';
 import '/common/common.dart';
+import '/dualshock3/conversion.dart';
 
 import 'widgets/display/pad.dart';
 import 'widgets/inputs/inputs.dart';
@@ -25,10 +26,7 @@ class RightPad extends StatelessWidget {
             knobSize: width / 7,
             onPressed: (value) => bridge.emitReport(.r3, value),
             onPositionChanged: (value) => bridge
-              ..setRightStick((
-                x: (value.dx + 1) / 2 * 255,
-                y: (value.dy + 1) / 2 * 255,
-              ))
+              ..setRightStick((x: value.dx.toDs3Stick, y: value.dy.toDs3Stick))
               ..emitReport(),
           ),
         ),
@@ -91,10 +89,7 @@ class LeftPad extends StatelessWidget {
             knobSize: width / 7,
             onPressed: (value) => bridge.emitReport(.l3, value),
             onPositionChanged: (value) => bridge
-              ..setLeftStick((
-                x: (value.dx + 1) / 2 * 255,
-                y: (value.dy + 1) / 2 * 255,
-              ))
+              ..setLeftStick((x: value.dx.toDs3Stick, y: value.dy.toDs3Stick))
               ..emitReport(),
           ),
         ),

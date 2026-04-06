@@ -56,6 +56,10 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
 
   void setRightStick(DS3Joystick value) => _inputReport.setRightStick(value);
 
+  void setAccel(int x, int y, int z) => _inputReport.setAccel(x: x, y: y, z: z);
+
+  void setGyro(int z) => _inputReport.gyroZ = z;
+
   Future<void> setup() async => runZonedGuarded(() async {
     if (state.type case .setup || .ready || .connected) {
       return log?.warn('Setup already in progress or completed');
