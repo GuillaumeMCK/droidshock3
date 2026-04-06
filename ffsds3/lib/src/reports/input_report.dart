@@ -195,6 +195,8 @@ final class InputReport {
   String toString() {
     final buffer = StringBuffer()
       ..writeln('InputReport:')
+      ..writeln('  Accel: $accel')
+      ..writeln('  GyroZ:  $gyroZ')
       ..writeln('  Buttons:');
 
     for (final button in DS3Input.values) {
