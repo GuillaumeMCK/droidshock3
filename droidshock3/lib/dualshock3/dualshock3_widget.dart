@@ -248,8 +248,8 @@ class Dualshock3Widget extends StatelessWidget {
       child: Column(
         mainAxisSize: .max,
         children: [
-          Triggers(),
           MotionButton(),
+          Triggers(),
           Expanded(
             child: Row(
               mainAxisAlignment: .spaceBetween,
