@@ -11,7 +11,7 @@ import '/gamepad/gamepads_cubit.dart';
 const motionRate = Duration(milliseconds: 20);
 
 final class HomeState {
-  const HomeState({this.motionEnabled = false});
+  const HomeState({this.motionEnabled = true});
 
   final bool motionEnabled;
 
