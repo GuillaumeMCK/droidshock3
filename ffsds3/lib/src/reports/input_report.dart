@@ -53,11 +53,11 @@ import '../board/board.dart';
 /// DualShock 3 Input Report (Sent to Host)
 final class InputReport {
   InputReport() : _bytes = Uint8List(48), _buttons = 0 {
-    // Initialize sticks to neutral (center = 127)
-    _bytes[5] = 127; // Left stick X
-    _bytes[6] = 127; // Left stick Y
-    _bytes[7] = 127; // Right stick X
-    _bytes[8] = 127; // Right stick Y
+    // Initialize sticks to neutral (center = 128)
+    _bytes[5] = 128; // Left stick X
+    _bytes[6] = 128; // Left stick Y
+    _bytes[7] = 128; // Right stick X
+    _bytes[8] = 128; // Right stick Y
     _bytes[30] = 5; // Unknown constant
 
     // Initialize accelerometer/gyro to neutral (big-endian 10-bit center = 511)
