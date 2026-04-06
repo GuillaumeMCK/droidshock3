@@ -1,13 +1,13 @@
 /// **Client → server**
-/// | Opcode     | Value  | Meaning                        |
-/// |------------|--------|--------------------------------|
-/// | [input]    | `0x01` | 48-byte input report           |
-/// | [shutdown] | `0xFF` | Graceful shutdown request      |
+/// | Opcode          | Value  | Meaning                        |
+/// |-----------------|--------|--------------------------------|
+/// | [inputReport]   | `0x01` | 48-byte input report           |
+/// | [shutdown]      | `0xFF` | Graceful shutdown request      |
 ///
 /// **Server → client**
-/// | Opcode   | Value  | Meaning                        |
-/// |----------|--------|--------------------------------|
-/// | [output] | `any`  | 48-byte output report          |
+/// | Opcode         | Value  | Meaning                        |
+/// |----------------|--------|--------------------------------|
+/// | [outputReport] | `any`  | 48-byte output report          |
 enum Op {
   /// DS3 input report sent by the client (bytes 1–48 = HID payload).
   inputReport(0x01),

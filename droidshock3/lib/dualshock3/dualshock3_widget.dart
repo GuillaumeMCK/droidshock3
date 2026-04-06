@@ -1,7 +1,8 @@
 import '/app/app_shell.dart';
-
 import '/bridge/bridge_cubit.dart';
 import '/common/common.dart';
+import '/dualshock3/conversion.dart';
+import '/home/home_cubit.dart';
 
 import 'widgets/display/pad.dart';
 import 'widgets/inputs/inputs.dart';
@@ -25,10 +26,7 @@ class RightPad extends StatelessWidget {
             knobSize: width / 7,
             onPressed: (value) => bridge.emitReport(.r3, value),
             onPositionChanged: (value) => bridge
-              ..setRightStick((
-                x: (value.dx + 1) / 2 * 255,
-                y: (value.dy + 1) / 2 * 255,
-              ))
+              ..setRightStick((x: value.dx.toDs3Stick, y: value.dy.toDs3Stick))
               ..emitReport(),
           ),
         ),
@@ -91,10 +89,7 @@ class LeftPad extends StatelessWidget {
             knobSize: width / 7,
             onPressed: (value) => bridge.emitReport(.l3, value),
             onPositionChanged: (value) => bridge
-              ..setLeftStick((
-                x: (value.dx + 1) / 2 * 255,
-                y: (value.dy + 1) / 2 * 255,
-              ))
+              ..setLeftStick((x: value.dx.toDs3Stick, y: value.dy.toDs3Stick))
               ..emitReport(),
           ),
         ),
@@ -223,6 +218,26 @@ class CenterControls extends StatelessWidget {
   }
 }
 
+class MotionButton extends HookWidget {
+  const MotionButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final ShadThemeData(:colorScheme, :textTheme) = context.theme;
+    final cubit = context.read<HomeCubit>();
+    final isActive = useBlocState(cubit).motionEnabled;
+
+    return ShadIconButton.ghost(
+      iconSize: 21,
+      onPressed: () => cubit.toggleMotion(),
+      icon: Icon(
+        LucideIcons.rotate3d200,
+        color: isActive ? colorScheme.primary : colorScheme.muted,
+      ),
+    );
+  }
+}
+
 class Dualshock3Widget extends StatelessWidget {
   const Dualshock3Widget({super.key});
 
@@ -233,6 +248,7 @@ class Dualshock3Widget extends StatelessWidget {
       child: Column(
         mainAxisSize: .max,
         children: [
+          MotionButton(),
           Triggers(),
           Expanded(
             child: Row(

@@ -402,10 +402,10 @@ packages:
     dependency: "direct main"
     description:
       name: gamepads
-      sha256: "9dfc582911bc3a228cecbffa39cfa19ae12ed9a73d2b985099e516f916ea063a"
+      sha256: "22249e4a78208f48bc84798f701cd1adee07cef34189954886ccf175580e9920"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.10"
+    version: "0.1.10+1"
   gamepads_android:
     dependency: transitive
     description:
@@ -418,18 +418,18 @@ packages:
     dependency: transitive
     description:
       name: gamepads_darwin
-      sha256: "308ff9c8cf68e7fdd8164bf2155c45874dd3ba2498d9d3e0cb5893f081eb9ad1"
+      sha256: a7668dc17f2e4b95c29c54e961c3ef6e34e3997718383e96dd0bdf5a5c3b03c8
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.2+3"
+    version: "0.1.2+4"
   gamepads_ios:
     dependency: transitive
     description:
       name: gamepads_ios
-      sha256: a47f0543b89a1a08cb65f96a6a091142858bee4f714774ae422f6188d9177853
+      sha256: "514a37d4b1b17bf47fe911ee1b750eca6be2b8abbdb71f200b9ad3186014d413"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.3+2"
+    version: "0.1.3+3"
   gamepads_linux:
     dependency: transitive
     description:
@@ -458,10 +458,10 @@ packages:
     dependency: transitive
     description:
       name: gamepads_windows
-      sha256: "5bcc279c2ef24c843291e4ddd54bcf2194b7eae2ef9b03151cf3267a11c6ab57"
+      sha256: "64285cc35c86748627bb29d486c4c7c631b0d11fe8128c89658946d9c2b32c1c"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.0"
+    version: "0.3.0"
   get_it:
     dependency: transitive
     description:
@@ -506,10 +506,10 @@ packages:
     dependency: transitive
     description:
       name: hotreloader
-      sha256: bc167a1163807b03bada490bfe2df25b0d744df359227880220a5cbd04e5734b
+      sha256: "66871df468fc24eee81f1a0a7cb98acc104716f9b7376d355437b48d633c4ebf"
       url: "https://pub.dev"
     source: hosted
-    version: "4.3.0"
+    version: "4.4.0"
   html:
     dependency: transitive
     description:
@@ -666,10 +666,10 @@ packages:
     dependency: transitive
     description:
       name: lucide_icons_flutter
-      sha256: "39472ddc8c5fc586d06a619a3871817ea02dd17defd31e67dcfc9ec77658b2a1"
+      sha256: df29c1cf4f19f9309f5204d40e0ba95338d9946a8ffdb4d75cf9aaccf449ce41
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.11"
+    version: "3.1.12"
   matcher:
     dependency: transitive
     description:
@@ -906,10 +906,10 @@ packages:
     dependency: "direct main"
     description:
       name: shadcn_ui
-      sha256: "342da1212a10d662a8a1e7c99a09b2c806303be24f06a7a4921159a130b6d06d"
+      sha256: a7b4b6fd87a44d2925aaeb519fa73f351b8eb6938b9f95e6efe888b9bc6f8434
       url: "https://pub.dev"
     source: hosted
-    version: "0.53.3"
+    version: "0.53.5"
   shelf:
     dependency: transitive
     description:
@@ -1031,10 +1031,10 @@ packages:
     dependency: transitive
     description:
       name: two_dimensional_scrollables
-      sha256: "45f77f28f3f084ac3c79f74b075c4d719937a3972e71191efc533d6f9487c045"
+      sha256: "0e49def226623668f79ac5c7b34f2eb52b752cc6da43de0776c344e6a17611cd"
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.1"
+    version: "0.4.2"
   typed_data:
     dependency: transitive
     description:
