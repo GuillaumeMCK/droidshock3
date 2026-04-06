@@ -1,4 +1,5 @@
 name: droidshock3
+version: 1.0.0
 
 environment:
   sdk: ^3.11.0
