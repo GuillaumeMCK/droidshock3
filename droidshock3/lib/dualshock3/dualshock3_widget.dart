@@ -1,8 +1,8 @@
 import '/app/app_shell.dart';
-
 import '/bridge/bridge_cubit.dart';
 import '/common/common.dart';
 import '/dualshock3/conversion.dart';
+import '/home/home_cubit.dart';
 
 import 'widgets/display/pad.dart';
 import 'widgets/inputs/inputs.dart';
@@ -218,6 +218,26 @@ class CenterControls extends StatelessWidget {
   }
 }
 
+class MotionButton extends HookWidget {
+  const MotionButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final ShadThemeData(:colorScheme, :textTheme) = context.theme;
+    final cubit = context.read<HomeCubit>();
+    final isActive = useBlocState(cubit).motionEnabled;
+
+    return ShadIconButton.ghost(
+      iconSize: 21,
+      onPressed: () => cubit.toggleMotion(),
+      icon: Icon(
+        LucideIcons.rotate3d200,
+        color: isActive ? colorScheme.primary : colorScheme.muted,
+      ),
+    );
+  }
+}
+
 class Dualshock3Widget extends StatelessWidget {
   const Dualshock3Widget({super.key});
 
@@ -229,6 +249,7 @@ class Dualshock3Widget extends StatelessWidget {
         mainAxisSize: .max,
         children: [
           Triggers(),
+          MotionButton(),
           Expanded(
             child: Row(
               mainAxisAlignment: .spaceBetween,
