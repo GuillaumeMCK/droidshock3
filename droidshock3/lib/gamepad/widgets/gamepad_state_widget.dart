@@ -73,11 +73,23 @@ final class _SelectedGamepad extends HookWidget {
         ),
         Padding(
           padding: .only(top: 8),
-          child: ShadButton.outline(
-            size: .sm,
-            expands: true,
-            child: Text('Remap Inputs', textAlign: .center),
-            onPressed: () => context.navToGamepadRemap(),
+          child: Row(
+            spacing: 8,
+            children: [
+              ShadButton.outline(
+                size: .sm,
+                child: Icon(LucideIcons.leaf),
+                onPressed: () => context.navToBatterySaver(),
+              ),
+              Expanded(
+                child: ShadButton.outline(
+                  size: .sm,
+                  expands: true,
+                  child: Text('Remap Inputs', textAlign: .center),
+                  onPressed: () => context.navToGamepadRemap(),
+                ),
+              ),
+            ],
           ),
         ),
       ],

@@ -70,6 +70,7 @@ class AppRouter extends RootStackRouter with AppLogger {
           page: GamepadRemapRoute.page,
           type: _bottomSheetTransition,
         ),
+        AutoRoute(path: 'battery-saver', page: BatterySaverRoute.page),
         AutoRoute(path: 'bridge', page: BridgeRoute.page),
         RedirectRoute(path: '*', redirectTo: 'home'),
       ],
@@ -79,6 +80,8 @@ class AppRouter extends RootStackRouter with AppLogger {
 
 extension RoutingExtension on BuildContext {
   void navToBridgePage() => router.navigate(const BridgeRoute());
+
+  void navToBatterySaver() => router.navigate(const BatterySaverRoute());
 
   void navToGamepadSelector() => router.navigate(const GamepadSelectorRoute());
 
