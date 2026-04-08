@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:root_plus/root_plus.dart';
 
@@ -14,6 +15,7 @@ import '/env.dart';
 part 'bootstrap_state.dart';
 
 late final String fTmpDir;
+late final String fAppDir;
 
 class BootstrapCubit extends Cubit<BootstrapState> with BootstrapLogger {
   BootstrapCubit()
@@ -46,7 +48,15 @@ class BootstrapCubit extends Cubit<BootstrapState> with BootstrapLogger {
 
     await _initialize('Storage', () async {
       fTmpDir = (await getTemporaryDirectory()).path;
-      log?.info('Temporary directory initialized at $fTmpDir');
+      fAppDir = (await getApplicationDocumentsDirectory()).path;
+      log?.debug(
+        'Directories:\n'
+        '  Temporary: $fTmpDir\n'
+        '  Documents: $fAppDir',
+      );
+      HydratedBloc.storage = await HydratedStorage.build(
+        storageDirectory: .new(fAppDir),
+      );
     });
 
     await _initialize('App Behavior', switch (Platform.operatingSystem) {
