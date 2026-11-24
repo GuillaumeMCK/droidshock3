@@ -1,3 +1,9 @@
+/// Where the bridge lives on the device, with its process file and log.
+const kBridgeDir = '/data/local/tmp/ds3_bridge';
+
+/// How often the bridge checks whether the client process is still alive.
+const kPidPollInterval = Duration(seconds: 1);
+
 /// **Client → server**
 /// | Opcode          | Value  | Meaning                        |
 /// |-----------------|--------|--------------------------------|

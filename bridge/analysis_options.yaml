@@ -1,5 +1,5 @@
 plugins:
-  leancode_lint: ^21.0.0
+  leancode_lint: ^28.0.0
 
 analyzer:
   errors:

@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:ffsds3/ffsds3.dart';
+import 'package:lucide_icons_flutter/lucide_icons_300.dart';
+import 'package:protocol/protocol.dart';
 
 import '/app/app_shell.dart';
 import '/common/common.dart';
@@ -13,7 +14,7 @@ class GamepadRemapPage extends HookWidget {
   Widget build(BuildContext context) {
     final ShadThemeData(:textTheme, :colorScheme) = context.theme;
     final Size(:height, :width) = context.watch<AppSize>();
-    final gamepads = useBlocState(context.read<GamepadsCubit>());
+    final gamepads = context.watch<GamepadsCubit>().state;
 
     final first = useState<DS3Input?>(null);
     final second = useState<DS3Input?>(null);
@@ -22,23 +23,21 @@ class GamepadRemapPage extends HookWidget {
       if (gamepads.selected == null) context.back();
     }, keys: [gamepads]);
 
-    useStreamListener(
-      gamepads.selected?.onPressed ?? const Stream.empty(),
-      (data) {
-        final (input, _) = data;
-        if (first.value != null && second.value != null) {
-          first.value = null;
-          second.value = null;
-        }
+    useStreamListener(gamepads.selected?.onPressed ?? const Stream.empty(), (
+      data,
+    ) {
+      final (input, _) = data;
+      if (first.value != null && second.value != null) {
+        first.value = null;
+        second.value = null;
+      }
 
-        if (first.value == null) {
-          first.value = input;
-        } else if (first.value != input) {
-          second.value = input;
-        }
-      },
-      keys: [gamepads.selected?.id],
-    );
+      if (first.value == null) {
+        first.value = input;
+      } else if (first.value != input) {
+        second.value = input;
+      }
+    }, keys: [gamepads.selected?.id]);
 
     void onSwap() {
       final (f, s) = (first.value, second.value);
@@ -118,7 +117,7 @@ class _SwapDisplay extends StatelessWidget {
             ),
           ),
           Icon(
-            LucideIcons.arrowLeftRight300,
+            LucideIcons300.arrowLeftRight,
             size: width / 6,
             color: colorScheme.muted,
           ),

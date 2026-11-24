@@ -6,7 +6,7 @@ import '/common/common.dart';
 import 'bridge_cubit.dart';
 
 @RoutePage()
-class BridgePage extends HookWidget {
+class BridgePage extends StatelessWidget {
   const BridgePage({super.key});
 
   @override
@@ -31,8 +31,8 @@ class _BridgeControls extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final ShadThemeData(:colorScheme, :textTheme) = context.theme;
-    final cubit = context.read<BridgeCubit>();
-    final state = useBlocState(cubit);
+    final cubit = context.watch<BridgeCubit>();
+    final state = cubit.state;
 
     final pending = useState(_pending);
 

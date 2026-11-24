@@ -74,14 +74,11 @@ class _RawGap extends LeafRenderObjectWidget {
 
 class RenderGap extends RenderBox {
   RenderGap({
-    required double mainAxisExtent,
-    double? crossAxisExtent,
-    Axis? fallbackDirection,
-    Color? color,
-  }) : _mainAxisExtent = mainAxisExtent,
-       _crossAxisExtent = crossAxisExtent,
-       _fallbackDirection = fallbackDirection,
-       _color = color;
+    required this._mainAxisExtent,
+    this._crossAxisExtent,
+    this._fallbackDirection,
+    this._color,
+  });
 
   double _mainAxisExtent;
   double? _crossAxisExtent;

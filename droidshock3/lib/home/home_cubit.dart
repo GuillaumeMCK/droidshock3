@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ffsds3/ffsds3.dart';
+import 'package:protocol/protocol.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
@@ -20,9 +20,8 @@ final class HomeState {
 }
 
 final class HomeCubit extends Cubit<HomeState> {
-  HomeCubit({required BridgeCubit bridge, required GamepadsCubit gamepads})
-    : _bridge = bridge,
-      super(const HomeState()) {
+  HomeCubit({required this._bridge, required GamepadsCubit gamepads})
+    : super(const HomeState()) {
     _subscribeGamepad(gamepads);
     _subscribeAccel();
     _subscribeGyro();
@@ -74,14 +73,13 @@ final class HomeCubit extends Cubit<HomeState> {
 
   void _subscribeAccel() {
     _accelSub?.cancel();
-    _accelSub = accelerometerEventStream(samplingPeriod: motionRate).listen((
-      event,
-    ) {
-      final AccelerometerEvent(:x, :y, :z) = event;
-      _bridge
-        ..setAccel(x.toDs3Accel, y.toDs3Accel, z.toDs3Accel)
-        ..emitReport();
-    });
+    _accelSub = accelerometerEventStream(samplingPeriod: motionRate)
+        .listen((event) {
+          final AccelerometerEvent(:x, :y, :z) = event;
+          _bridge
+            ..setAccel(x.toDs3Accel, y.toDs3Accel, z.toDs3Accel)
+            ..emitReport();
+        });
   }
 
   void _subscribeGyro() {

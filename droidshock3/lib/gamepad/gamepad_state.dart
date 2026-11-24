@@ -1,4 +1,4 @@
-import 'package:ffsds3/ffsds3.dart';
+import 'package:protocol/protocol.dart';
 import 'package:gamepads/gamepads.dart';
 
 const defaultMapping = {

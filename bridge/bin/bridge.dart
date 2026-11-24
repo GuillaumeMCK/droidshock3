@@ -1,23 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:embed_annotation/embed_annotation.dart';
 import 'package:bridge/bridge.dart';
-
-part 'bridge.g.dart';
-
-@EmbedBinary('/assets/libaio.so')
-final List<int> libaioBytes = _$libaioBytes;
-
-const kLibaioPath = '$kBridgeDir/libaio.so';
+import 'package:protocol/protocol.dart';
 
 const kProcessPath = '$kBridgeDir/process';
 
 void main(List<String> args) => runZonedGuarded(
   () async {
-    final libaio = File(kLibaioPath);
-    if (!libaio.existsSync()) libaio.writeAsBytesSync(libaioBytes);
-
     File? processFile;
     int? clientPid;
     String? usbConfigBak;

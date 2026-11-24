@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'eeprom.dart';
 
 export 'eeprom.dart';
-export 'inputs.dart';
 
 /// Represents the physical hardware and identity of the gamepad.
 abstract class Board {

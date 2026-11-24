@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:ffsds3/ffsds3.dart';
+import 'package:protocol/protocol.dart';
 import 'package:flutter/services.dart';
 import 'package:root_plus/root_plus.dart';
-import 'package:bridge/bridge.dart';
 
 import '/bootstrap/bootstrap_cubit.dart';
 import '/common/common.dart';

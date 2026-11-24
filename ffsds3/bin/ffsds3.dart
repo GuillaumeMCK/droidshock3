@@ -9,16 +9,15 @@ Future<void> main() async {
 
   StreamSubscription<void>? stdinSubscription;
   try {
-    final reg = await gadget.register();
-    reg.bind(defaultUDC);
-    await reg.udc?.awaitState(.configured);
+    await gadget.bind();
+    await gadget.udc?.awaitState(.configured);
     stdout.writeln(
       'Commands: ps, cross, square, circle, triangle, start, quit',
     );
     stdinSubscription = _loop(controller);
     await ProcessSignal.sigint.watch().first;
-  } catch (e, st) {
-    stderr.writeln('ERROR: $e\n$st');
+  } catch (err, st) {
+    stderr.writeln('ERROR: $err\n$st');
   } finally {
     await stdinSubscription?.cancel();
     await gadget.remove();

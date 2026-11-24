@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:protocol/protocol.dart';
+import 'package:protocol/logger.dart';
+import 'package:protocol/utils.dart';
 import 'package:usb_gadget/usb_gadget.dart';
 
 import 'board/board.dart';
 import 'reports/feature_reports.dart';
-import 'reports/input_report.dart';
-import 'reports/output_report.dart';
 
 (Gadget gadget, Dualshock3 dualshock3) createDualshock3([
   String name = 'ds3_gadget',
@@ -20,7 +21,7 @@ import 'reports/output_report.dart';
       .enUS: .new(
         manufacturer: 'Sony Computer Entertainment Inc.',
         product: 'PLAYSTATION(R)3 Controller',
-        serialnumber: 'SN00000000',
+        serialNumber: 'SN00000000',
       ),
     },
     configs: [
@@ -37,7 +38,7 @@ import 'reports/output_report.dart';
 }
 
 /// Emulates a Sony DualShock 3 controller using FunctionFS.
-final class Dualshock3 extends HIDFunctionFs implements Board {
+final class Dualshock3 extends HidFunctionFs with Ds3Logger implements Board {
   Dualshock3({List<int>? deviceAddr, List<int>? pairedAddr, int? serialnumber})
     : eeprom = Eeprom(),
       revision = 0x8A,
@@ -52,7 +53,7 @@ final class Dualshock3 extends HIDFunctionFs implements Board {
       output = OutputReport(),
       super(
         name: 'dualshock3',
-        reportDescriptor: .fromList([
+        reportDescriptor: const [
           0x05, 0x01, 0x09, 0x04, 0xA1, 0x01, 0xA1, 0x02, 0x85, 0x01, 0x75, //
           0x08, 0x95, 0x01, 0x15, 0x00, 0x26, 0xFF, 0x00, 0x81, 0x03, 0x75, //
           0x01, 0x95, 0x13, 0x15, 0x00, 0x25, 0x01, 0x35, 0x00, 0x45, 0x01, //
@@ -67,8 +68,7 @@ final class Dualshock3 extends HIDFunctionFs implements Board {
           0xA1, 0x02, 0x85, 0xEE, 0x75, 0x08, 0x95, 0x30, 0x09, 0x01, 0xB1, //
           0x02, 0xC0, 0xA1, 0x02, 0x85, 0xEF, 0x75, 0x08, 0x95, 0x30, 0x09, //
           0x01, 0xB1, 0x02, 0xC0, 0xC0, //
-        ]),
-        speeds: {.fullSpeed, .highSpeed},
+        ],
         config: const .bidirectional(
           pollInterval: .new(milliseconds: 8),
           reportInterval: .new(milliseconds: 8),
@@ -96,44 +96,41 @@ final class Dualshock3 extends HIDFunctionFs implements Board {
   final OutputReport output;
   late final FeatureReport features;
 
-  StreamSubscription<int>? _epInSub;
-  StreamSubscription<Uint8List>? _epOutSub;
+  /// Whether the host still has the function enabled; a suspended bus
+  /// resumes to [CustomFunctionState.enabled] without a new [onEnable].
+  bool get _active => state == .enabled || state == .suspended;
 
   @override
   Future<void> onEnable() async {
-    super.onEnable();
-    _epInSub ??= epIn.writeWhile(
-      condition: () => features.inputStreamingEnabled && state == .enabled,
-      data: () => .fromList([0x01, ...input.bytes]),
-    );
-    _epOutSub ??= epOut.stream.listen(
+    epOut.stream().listen(
       (bytes) => switch (bytes) {
-        [0x01, ...final data] when data.length == 48 => output.update(data),
+        [0x01, ...final data] => output.update(data),
         _ => log?.warn('Received unrecognized output report: ${bytes.xxd()}'),
       },
+      onError: onError,
     );
+    // Unlike [InEndpoint.writeWhile], keeps polling while streaming is off:
+    // the host turns it on with a SET_REPORT after enabling the function.
+    while (_active) {
+      final next = Future<void>.delayed(config.reportInterval);
+      if (state == .enabled && features.inputStreamingEnabled) {
+        try {
+          await epIn.write([
+            0x01,
+            ...input.bytes,
+          ], timeout: config.reportInterval);
+        } on GadgetException {
+          // Queue full or endpoint not ready: drop this report.
+        }
+      }
+      await next;
+    }
   }
 
   @override
-  Future<void> onDisable() async {
-    await release(partial: true);
-    super.onDisable();
-  }
-
-  @override
-  Future<void> release({bool partial = false}) async {
-    if (isReleased) return;
-    await [?_epOutSub?.cancel(), ?_epOutSub?.cancel()].wait;
-    _epOutSub = null;
-    _epInSub = null;
-    if (partial) return;
-    await super.release();
-  }
-
-  @override
-  Uint8List onGetReport(HIDReportType type, int reportId) {
+  List<int>? onGetReport(HidReportType type, int reportId) {
     return switch ((type, reportId)) {
-      (.input, 0x01) => .fromList([0x01, ...input.bytes]),
+      (.input, 0x01) => [0x01, ...input.bytes],
       (.feature, 0x01) => features.getControllerInfo(),
       (.feature, 0xF1) => features.getEepromBlock(),
       (.feature, 0xF2) => features.getDeviceInfo(),
@@ -141,23 +138,29 @@ final class Dualshock3 extends HIDFunctionFs implements Board {
       (.feature, 0xEF) => features.getSensorConfig(),
       (.feature, 0xF7) => features.getSensorParameters(),
       (.feature, 0xF8) => features.getSensorStatus(),
-      _ => throw UnsupportedError(
-        'Unhandled GET_REPORT: type=${type.name}, id=${reportId.toHex()}',
-      ),
+      _ => _unhandled('GET_REPORT', type, reportId),
     };
   }
 
   @override
-  void onSetReport(HIDReportType type, int reportId, Uint8List data) {
+  void onSetReport(HidReportType type, int reportId, Uint8List data) {
     return switch ((type, reportId)) {
       (.output, 0x01) => output.update(data),
       (.feature, 0xEF) => features.setSensorState(data),
       (.feature, 0xF1) => features.setEepromAccess(data),
       (.feature, 0xF4) => features.handleCommand(data),
       (.feature, 0xF5) => features.setPairedHost(data),
-      _ => throw UnsupportedError(
-        'Unhandled SET_REPORT: type=${type.name}, id=${reportId.toHex()}',
-      ),
+      _ => _unhandled('SET_REPORT', type, reportId),
     };
   }
+
+  /// Logs an unsupported request, which the host then sees stalled.
+  Null _unhandled(String request, HidReportType type, int reportId) {
+    log?.warn('Unhandled $request: type=${type.name}, id=${reportId.toHex()}');
+    return null;
+  }
+
+  @override
+  void onError(Object error, StackTrace stack) =>
+      log?.error('Function error', error, stack);
 }

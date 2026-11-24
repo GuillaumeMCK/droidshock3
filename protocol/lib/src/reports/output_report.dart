@@ -33,7 +33,9 @@
 library;
 
 import 'dart:typed_data';
-import 'package:usb_gadget/usb_gadget.dart';
+
+import '../logger/logger.dart';
+import '../utils/utils.dart';
 
 /// Per-LED blink pattern extracted from an [OutputReport].
 ///
@@ -101,7 +103,7 @@ final class LedPattern {
 }
 
 /// DualShock 3 Output Report (Parsed from Host)
-final class OutputReport with USBGadgetLogger {
+final class OutputReport with Ds3Logger {
   OutputReport({Uint8List? bytes})
     : bytes = bytes ?? Uint8List(48),
       assert(bytes == null || bytes.length == 48, 'Report must be 48 bytes');
@@ -111,7 +113,9 @@ final class OutputReport with USBGadgetLogger {
   /// Update the internal state with fresh data from the host.
   void update(List<int> newBytes) {
     if (newBytes.length != 48) {
-      throw ArgumentError('Output report must be exactly 48 bytes');
+      return log?.warn(
+        'Output report must be exactly 48 bytes (${newBytes.length})',
+      );
     }
     bytes.setAll(0, newBytes);
     log?.debug('Output report updated: $this');

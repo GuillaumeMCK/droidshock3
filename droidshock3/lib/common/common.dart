@@ -1,5 +1,5 @@
-export 'package:flutter/material.dart' show TextCapitalization;
-export 'package:flutter/services.dart' show TextInputFormatter;
+export 'package:flutter/services.dart'
+    show TextCapitalization, TextInputFormatter;
 export 'package:flutter/widgets.dart';
 export 'package:flutter_bloc/flutter_bloc.dart';
 
