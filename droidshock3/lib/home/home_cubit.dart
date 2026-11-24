@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:protocol/protocol.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gamepads/gamepads.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 import '/dualshock3/conversion.dart';
@@ -23,6 +24,7 @@ final class HomeCubit extends Cubit<HomeState> {
   HomeCubit({required this._bridge, required GamepadsCubit gamepads})
     : super(const HomeState()) {
     _subscribeGamepad(gamepads);
+    _outputSub = _bridge.outputReports.listen(_onOutputReport);
     _subscribeAccel();
     _subscribeGyro();
   }
@@ -33,12 +35,44 @@ final class HomeCubit extends Cubit<HomeState> {
   StreamSubscription<AccelerometerEvent>? _accelSub;
   StreamSubscription<GyroscopeEvent>? _gyroSub;
   StreamSubscription<GamepadsState>? _gamepadStateSub;
+  StreamSubscription<OutputReport>? _outputSub;
+
+  GamepadController? _gamepad;
+  Rumble? _rumble;
 
   void _subscribeGamepad(GamepadsCubit gamepads) {
+    _select(gamepads.state.selected?.gamepad);
     _rewireInput(gamepads.state.selected?.onEvent);
     _gamepadStateSub = gamepads.stream.listen((state) {
+      _select(state.selected?.gamepad);
       _rewireInput(state.selected?.onEvent);
     });
+  }
+
+  void _select(GamepadController? gamepad) {
+    if (identical(gamepad, _gamepad)) return;
+    unawaited(_gamepad?.stopRumble());
+    _gamepad = gamepad;
+    _rumble = null; // Applied again to the new gamepad on the next report.
+  }
+
+  /// Applies the host's rumble to the gamepad when it changes: the bridge
+  /// repeats reports, which would restart a short effect each time.
+  void _onOutputReport(OutputReport report) {
+    final gamepad = _gamepad;
+    final rumble = report.rumble;
+    if (gamepad == null || rumble == _rumble) return;
+    _rumble = rumble;
+    final (:low, :high, :duration) = rumble;
+    unawaited(
+      low == 0 && high == 0
+          ? gamepad.stopRumble()
+          : gamepad.rumble(
+              lowFrequency: low,
+              highFrequency: high,
+              duration: duration,
+            ),
+    );
   }
 
   void _rewireInput(Stream<(DS3Input, double)>? stream) {
@@ -94,6 +128,8 @@ final class HomeCubit extends Cubit<HomeState> {
 
   @override
   Future<void> close() {
+    unawaited(_gamepad?.stopRumble());
+    _outputSub?.cancel();
     _gamepadStateSub?.cancel();
     _inputSub?.cancel();
     _accelSub?.cancel();

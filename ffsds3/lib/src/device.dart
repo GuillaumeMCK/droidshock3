@@ -97,6 +97,9 @@ final class Dualshock3 extends HidFunctionFs with Ds3Logger implements Board {
   final OutputReport output;
   late final FeatureReport features;
 
+  /// Called after each output report from the host updates [output].
+  void Function(OutputReport output)? onOutputReport;
+
   StreamSubscription<void>? _epInSub;
   StreamSubscription<Uint8List>? _epOutSub;
 
@@ -107,7 +110,7 @@ final class Dualshock3 extends HidFunctionFs with Ds3Logger implements Board {
   void onEnable() {
     _epOutSub ??= epOut.stream().listen(
       (bytes) => switch (bytes) {
-        [0x01, ...final data] => output.update(data),
+        [0x01, ...final data] => _onOutputReport(data),
         _ => log?.warn('Received unrecognized output report: ${bytes.xxd()}'),
       },
       onError: onError,
@@ -144,6 +147,11 @@ final class Dualshock3 extends HidFunctionFs with Ds3Logger implements Board {
         .listen(null, onError: onError, onDone: () => _epInSub = null);
   }
 
+  void _onOutputReport(List<int> data) {
+    output.update(data);
+    onOutputReport?.call(output);
+  }
+
   @override
   List<int>? onGetReport(HidReportType type, int reportId) {
     return switch ((type, reportId)) {
@@ -164,7 +172,7 @@ final class Dualshock3 extends HidFunctionFs with Ds3Logger implements Board {
     switch ((type, reportId)) {
       case (.output, 0x01):
         // Starts with the report ID, like reports on the OUT endpoint.
-        output.update(switch (data) {
+        _onOutputReport(switch (data) {
           [0x01, ...final report] => report,
           _ => data,
         });
