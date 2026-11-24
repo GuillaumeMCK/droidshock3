@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+
 import '/bootstrap/bootstrap_cubit.dart';
 import '/common/common.dart';
 
@@ -42,7 +43,7 @@ final class _LoadingScreen extends StatelessWidget {
             tween: Tween<double>(begin: null, end: step / BootstrapCubit.steps),
             duration: 250.ms,
             curve: Curves.easeInOut,
-            builder: (_, value, _) => Text(
+            builder: (context, value, _) => Text(
               'DROIDSHOCK 3',
               style: textTheme.p.extraBold.noHeight
                   .withColor(colorScheme.primary)

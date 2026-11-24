@@ -92,7 +92,7 @@ class DashedBorder extends Border {
     final topWidth = rect.width;
     final bottomWidth = rect.width;
 
-    //region calculate spacing and draw top border
+    // region calculate spacing and draw top border
     var partNumber = topWidth ~/ dashLength;
     if (partNumber.isOdd) {
       partNumber -= 1;
@@ -125,9 +125,9 @@ class DashedBorder extends Border {
         distance = target + topSpacing;
       }
     }
-    //endregion
+    // endregion
 
-    //region calculate spacing and draw right border
+    // region calculate spacing and draw right border
     partNumber = rightHeight ~/ dashLength;
     if (partNumber.isOdd) {
       partNumber -= 1;
@@ -165,9 +165,9 @@ class DashedBorder extends Border {
         distance = target + rightSpacing;
       }
     }
-    //endregion
+    // endregion
 
-    //region calculate spacing and draw bottom border
+    // region calculate spacing and draw bottom border
     partNumber = bottomWidth ~/ dashLength;
     if (partNumber.isOdd) {
       partNumber -= 1;
@@ -200,9 +200,9 @@ class DashedBorder extends Border {
         distance = target + bottomSpacing;
       }
     }
-    //endregion
+    // endregion
 
-    //region calculate spacing and draw left border
+    // region calculate spacing and draw left border
     partNumber = leftHeight ~/ dashLength;
     if (partNumber.isOdd) {
       partNumber -= 1;
@@ -239,7 +239,7 @@ class DashedBorder extends Border {
         distance = target + leftSpacing;
       }
     }
-    //endregion
+    // endregion
   }
 
   /// This method will work and draw for borders whose corner is radius.
@@ -260,7 +260,7 @@ class DashedBorder extends Border {
     var topRightCorner = 0.0;
     var bottomRightCorner = 0.0;
 
-    //region calculate center point of each corner
+    // region calculate center point of each corner
     if (borderRadius != null) {
       leftHeight -= borderRadius.topLeft.y + borderRadius.bottomLeft.y;
       rightHeight -= borderRadius.topRight.y + borderRadius.bottomRight.y;
@@ -311,9 +311,9 @@ class DashedBorder extends Border {
               rect.height +
               rect.width);
     }
-    //endregion
+    // endregion
 
-    //region calculate spacing and draw left border
+    // region calculate spacing and draw left border
     var partNumber =
         (leftHeight + bottomLeftCorner / 2 + topLeftCorner / 2) ~/ dashLength;
     if (partNumber.isOdd) {
@@ -362,9 +362,9 @@ class DashedBorder extends Border {
         distance = target + leftSpacing;
       }
     }
-    //endregion
+    // endregion
 
-    //region calculate spacing and draw top border
+    // region calculate spacing and draw top border
     partNumber =
         (topWidth + topRightCorner / 2 + topLeftCorner / 2) ~/ dashLength;
     if (partNumber.isOdd) {
@@ -421,9 +421,9 @@ class DashedBorder extends Border {
       }
     }
 
-    //endregion
+    // endregion
 
-    //region calculate spacing and draw right border
+    // region calculate spacing and draw right border
     partNumber =
         (rightHeight + topRightCorner / 2 + bottomRightCorner / 2) ~/
         dashLength;
@@ -497,9 +497,9 @@ class DashedBorder extends Border {
         distance = target + rightSpacing;
       }
     }
-    //endregion
+    // endregion
 
-    //region calculate spacing and draw bottom border
+    // region calculate spacing and draw bottom border
     partNumber =
         (bottomWidth + bottomRightCorner / 2 + bottomLeftCorner / 2) ~/
         dashLength;
@@ -550,5 +550,5 @@ class DashedBorder extends Border {
     }
   }
 
-  //endregion
+  // endregion
 }

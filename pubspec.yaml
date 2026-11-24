@@ -1,0 +1,11 @@
+name: dualshock3_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.14.0
+
+workspace:
+  - protocol
+  - bridge
+  - droidshock3
+  - ffsds3

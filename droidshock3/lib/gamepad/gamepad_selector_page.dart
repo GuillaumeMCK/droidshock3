@@ -9,8 +9,8 @@ class GamepadSelectorPage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<GamepadsCubit>();
-    final gamepads = useBlocState(cubit);
+    final cubit = context.watch<GamepadsCubit>();
+    final gamepads = cubit.state;
 
     usePostFrameEffect(() {
       if (gamepads.isEmpty) {

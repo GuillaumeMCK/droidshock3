@@ -4,7 +4,8 @@ import 'dart:typed_data';
 import 'package:using/using.dart';
 
 import 'logger.dart';
-import 'protocol.dart';
+
+import 'package:protocol/protocol.dart';
 
 typedef FrameHandler = void Function(Op op, Uint8List data);
 typedef CloseHandler = void Function();

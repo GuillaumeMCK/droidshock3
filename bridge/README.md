@@ -43,12 +43,10 @@ sudo ./bridge \
 
 On startup the bridge:
 
-1. Extracts the bundled `libaio.so` to `/data/local/tmp/ds3_bridge/libaio.so` if not
-   already present.
-2. Registers the DualShock 3 USB gadget and binds it to the default UDC.
-3. Binds a TCP server on `0.0.0.0` at an ephemeral loopback port.
-4. Writes `<pid>:<port>` to the process file so the Flutter client can discover the port.
-5. Deletes the process file on clean shutdown.
+1. Registers the DualShock 3 USB gadget and binds it to the default UDC.
+2. Binds a TCP server on `0.0.0.0` at an ephemeral loopback port.
+3. Writes `<pid>:<port>` to the process file so the Flutter client can discover the port.
+4. Deletes the process file on clean shutdown.
 
 ## CLI flags
 

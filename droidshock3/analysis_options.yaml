@@ -1,6 +1,6 @@
 include: package:lints/recommended.yaml
-plugins:plugins:
-  leancode_lint:
+plugins:
+  leancode_lint: ^28.0.0
 
 analyzer:
   errors:
@@ -8,3 +8,5 @@ analyzer:
   exclude:
     - '**/*.g.dart'
     - '**/*.freezed.dart'
+    - build/**
+    - android/**

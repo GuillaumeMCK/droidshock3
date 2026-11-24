@@ -1,4 +1,7 @@
 import '/app/app_shell.dart';
+
+import 'package:lucide_icons_flutter/lucide_icons_200.dart';
+
 import '/bridge/bridge_cubit.dart';
 import '/common/common.dart';
 import '/dualshock3/conversion.dart';
@@ -13,7 +16,6 @@ class RightPad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Size(:width) = context.watch<AppSize>();
-    final bridge = context.read<BridgeCubit>();
     final btnSize = width / 8;
     return Stack(
       alignment: .center,
@@ -24,8 +26,9 @@ class RightPad extends StatelessWidget {
           child: Joystick(
             size: width / 1.5,
             knobSize: width / 7,
-            onPressed: (value) => bridge.emitReport(.r3, value),
-            onPositionChanged: (value) => bridge
+            onPressed: (value) =>
+                context.read<BridgeCubit>().emitReport(.r3, value),
+            onPositionChanged: (value) => context.read<BridgeCubit>()
               ..setRightStick((x: value.dx.toDs3Stick, y: value.dy.toDs3Stick))
               ..emitReport(),
           ),
@@ -38,28 +41,32 @@ class RightPad extends StatelessWidget {
                 alignment: .topCenter,
                 child: TriangleButton(
                   size: btnSize,
-                  onPressed: (value) => bridge.emitReport(.triangle, value),
+                  onPressed: (value) =>
+                      context.read<BridgeCubit>().emitReport(.triangle, value),
                 ),
               ),
               Align(
                 alignment: .centerLeft,
                 child: SquareButton(
                   size: btnSize,
-                  onPressed: (value) => bridge.emitReport(.square, value),
+                  onPressed: (value) =>
+                      context.read<BridgeCubit>().emitReport(.square, value),
                 ),
               ),
               Align(
                 alignment: .centerRight,
                 child: CircleButton(
                   size: btnSize,
-                  onPressed: (value) => bridge.emitReport(.circle, value),
+                  onPressed: (value) =>
+                      context.read<BridgeCubit>().emitReport(.circle, value),
                 ),
               ),
               Align(
                 alignment: .bottomCenter,
                 child: CrossButton(
                   size: btnSize,
-                  onPressed: (value) => bridge.emitReport(.cross, value),
+                  onPressed: (value) =>
+                      context.read<BridgeCubit>().emitReport(.cross, value),
                 ),
               ),
             ],
@@ -76,7 +83,6 @@ class LeftPad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Size(:width) = context.watch<AppSize>();
-    final bridge = context.read<BridgeCubit>();
     final btnSize = width / 8;
     return Stack(
       alignment: .center,
@@ -87,8 +93,9 @@ class LeftPad extends StatelessWidget {
           child: Joystick(
             size: width / 1.5,
             knobSize: width / 7,
-            onPressed: (value) => bridge.emitReport(.l3, value),
-            onPositionChanged: (value) => bridge
+            onPressed: (value) =>
+                context.read<BridgeCubit>().emitReport(.l3, value),
+            onPositionChanged: (value) => context.read<BridgeCubit>()
               ..setLeftStick((x: value.dx.toDs3Stick, y: value.dy.toDs3Stick))
               ..emitReport(),
           ),
@@ -101,28 +108,32 @@ class LeftPad extends StatelessWidget {
                 alignment: .topCenter,
                 child: DirectionButton.down(
                   size: btnSize,
-                  onPressed: (value) => bridge.emitReport(.up, value),
+                  onPressed: (value) =>
+                      context.read<BridgeCubit>().emitReport(.up, value),
                 ),
               ),
               Align(
                 alignment: .centerLeft,
                 child: DirectionButton.right(
                   size: btnSize,
-                  onPressed: (value) => bridge.emitReport(.left, value),
+                  onPressed: (value) =>
+                      context.read<BridgeCubit>().emitReport(.left, value),
                 ),
               ),
               Align(
                 alignment: .centerRight,
                 child: DirectionButton.left(
                   size: btnSize,
-                  onPressed: (value) => bridge.emitReport(.right, value),
+                  onPressed: (value) =>
+                      context.read<BridgeCubit>().emitReport(.right, value),
                 ),
               ),
               Align(
                 alignment: .bottomCenter,
                 child: DirectionButton.up(
                   size: btnSize,
-                  onPressed: (value) => bridge.emitReport(.down, value),
+                  onPressed: (value) =>
+                      context.read<BridgeCubit>().emitReport(.down, value),
                 ),
               ),
             ],
@@ -140,7 +151,6 @@ class Triggers extends StatelessWidget {
   Widget build(BuildContext context) {
     final ShadThemeData(:colorScheme, :textTheme) = context.theme;
     final triggerSize = context.watch<AppSize>().width / 3.5;
-    final bridge = context.read<BridgeCubit>();
 
     return Row(
       mainAxisAlignment: .spaceBetween,
@@ -158,12 +168,14 @@ class Triggers extends StatelessWidget {
               LButton(
                 2,
                 width: triggerSize,
-                onPressed: (value) => bridge.emitReport(.l2, value),
+                onPressed: (value) =>
+                    context.read<BridgeCubit>().emitReport(.l2, value),
               ),
               LButton(
                 1,
                 width: triggerSize,
-                onPressed: (value) => bridge.emitReport(.l1, value),
+                onPressed: (value) =>
+                    context.read<BridgeCubit>().emitReport(.l1, value),
               ),
             ],
           ),
@@ -181,12 +193,14 @@ class Triggers extends StatelessWidget {
               RButton(
                 2,
                 width: triggerSize,
-                onPressed: (value) => bridge.emitReport(.r2, value),
+                onPressed: (value) =>
+                    context.read<BridgeCubit>().emitReport(.r2, value),
               ),
               RButton(
                 1,
                 width: triggerSize,
-                onPressed: (value) => bridge.emitReport(.r1, value),
+                onPressed: (value) =>
+                    context.read<BridgeCubit>().emitReport(.r1, value),
               ),
             ],
           ),
@@ -202,36 +216,42 @@ class CenterControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Size(:width) = context.watch<AppSize>();
-    final bridge = context.read<BridgeCubit>();
     return Row(
       spacing: 16,
       mainAxisAlignment: .center,
       children: [
-        SelectButton(onPressed: (value) => bridge.emitReport(.select, value)),
+        SelectButton(
+          onPressed: (value) =>
+              context.read<BridgeCubit>().emitReport(.select, value),
+        ),
         PSButton(
           size: width / 12,
-          onPressed: (value) => bridge.emitReport(.ps, value),
+          onPressed: (value) =>
+              context.read<BridgeCubit>().emitReport(.ps, value),
         ),
-        StartButton(onPressed: (value) => bridge.emitReport(.start, value)),
+        StartButton(
+          onPressed: (value) =>
+              context.read<BridgeCubit>().emitReport(.start, value),
+        ),
       ],
     );
   }
 }
 
-class MotionButton extends HookWidget {
+class MotionButton extends StatelessWidget {
   const MotionButton({super.key});
 
   @override
   Widget build(BuildContext context) {
     final ShadThemeData(:colorScheme, :textTheme) = context.theme;
-    final cubit = context.read<HomeCubit>();
-    final isActive = useBlocState(cubit).motionEnabled;
+    final cubit = context.watch<HomeCubit>();
+    final isActive = cubit.state.motionEnabled;
 
     return ShadIconButton.ghost(
       iconSize: 21,
       onPressed: () => cubit.toggleMotion(),
       icon: Icon(
-        LucideIcons.rotate3d200,
+        LucideIcons200.rotate3d,
         color: isActive ? colorScheme.primary : colorScheme.muted,
       ),
     );

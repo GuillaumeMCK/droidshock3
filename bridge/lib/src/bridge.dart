@@ -6,16 +6,10 @@ import 'package:ffsds3/ffsds3.dart';
 import 'package:using/using.dart';
 
 import 'logger.dart';
-import 'protocol.dart';
 import 'session.dart';
 
-const kBridgeDir = '/data/local/tmp/ds3_bridge';
-
-/// How often to check whether the client process is still alive.
-const kPidPollInterval = Duration(seconds: 1);
-
 /// How often to push DS3 output reports to the connected client.
-const _kOutputInterval = Duration(milliseconds: 10);
+const _kOutputInterval = Duration(milliseconds: 500);
 
 /// Single-client TCP bridge between a DualShock 3 USB gadget and a Flutter client.
 final class Ds3Bridge with Releasable, BridgeLogger {
@@ -35,10 +29,10 @@ final class Ds3Bridge with Releasable, BridgeLogger {
 
   static Future<Ds3Bridge> start({int? clientPid, String? usbConfigBak}) async {
     final (gadget, ds3) = createDualshock3();
-    late final RawServerSocket server;
+    RawServerSocket? server;
     try {
       server = await RawServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-      await gadget.register().then((r) => r.bind(defaultUDC));
+      await gadget.bind();
       return Ds3Bridge._(
         server,
         gadget,
@@ -47,7 +41,7 @@ final class Ds3Bridge with Releasable, BridgeLogger {
         usbConfigBak: usbConfigBak,
       );
     } catch (_) {
-      await server.close();
+      await server?.close();
       await gadget.remove();
       rethrow;
     }
@@ -122,12 +116,14 @@ final class Ds3Bridge with Releasable, BridgeLogger {
 
   Future<void> _restoreUsbConfig() async {
     if (_usbConfigBak == null) return;
-    await Process.run('sh', [
-      '-c',
-      'setprop sys.usb.config "$_usbConfigBak"',
-    ]).catchError((err) {
-      log.error('Failed to restore USB config:', err);
-    });
+    try {
+      await Process.run('sh', [
+        '-c',
+        'setprop sys.usb.config "$_usbConfigBak"',
+      ]);
+    } on Object catch (err, st) {
+      log.error('Failed to restore USB config:', err, st);
+    }
   }
 
   @override

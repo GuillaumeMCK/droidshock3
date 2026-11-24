@@ -46,9 +46,10 @@
 library;
 
 import 'dart:typed_data';
-import 'package:usb_gadget/usb_gadget.dart';
 
-import '../board/board.dart';
+import '../utils/utils.dart';
+
+import '../inputs.dart';
 
 /// DualShock 3 Input Report (Sent to Host)
 final class InputReport {
@@ -176,7 +177,6 @@ final class InputReport {
     if (y != null) _bytes.setRange(42, 44, y.toBytes(2));
     if (z != null) _bytes.setRange(44, 46, z.toBytes(2));
   }
-
 
   /// Gets accelerometer values (X, Y, Z).
   (int, int, int) get accel => (

@@ -34,9 +34,8 @@ ShadTextTheme textTheme(ShadColorScheme colorScheme) => ShadTextTheme.custom(
     fontSize: 15,
     fontWeight: FontWeight.w400,
   ),
-  muted: ShadTextDefaultTheme.muted(
-    family: kDefaultFontFamily,
-  ).copyWith(color: colorScheme.mutedForeground),
+  muted: ShadTextDefaultTheme.muted(family: kDefaultFontFamily)
+      .copyWith(color: colorScheme.mutedForeground),
   custom: {
     'xs': const TextStyle(
       fontSize: 13,

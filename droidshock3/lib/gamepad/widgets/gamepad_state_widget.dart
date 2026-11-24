@@ -11,7 +11,7 @@ final class GamepadStateWidget extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final Size(:height, :width) = context.watch<AppSize>();
-    final gamepads = useBlocState(context.read<GamepadsCubit>());
+    final gamepads = context.watch<GamepadsCubit>().state;
 
     usePostFrameEffect(() {
       if (gamepads.length > 1) {
@@ -37,7 +37,9 @@ final class _SelectedGamepad extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final ShadThemeData(:colorScheme, :textTheme) = context.theme;
-    final gamepad = useBlocState(context.read<GamepadsCubit>()).selected;
+    final gamepad = context.select(
+      (GamepadsCubit cubit) => cubit.state.selected,
+    );
 
     final (color1, color2) = useMemoized(
       () => (colorScheme.primary.shiftLightness(), colorScheme.primary),
@@ -58,7 +60,7 @@ final class _SelectedGamepad extends HookWidget {
               animatable: Tween<double>(begin: 0, end: 1),
               duration: 500.ms,
               repeatMode: .reverse,
-              builder: (_, value, _) => Icon(
+              builder: (context, value, _) => Icon(
                 LucideIcons.bluetoothConnected,
                 color: Color.lerp(color1, color2, value),
                 size: 21,

@@ -1,5 +1,7 @@
 import 'dart:typed_data';
-import 'package:usb_gadget/usb_gadget.dart';
+
+import 'package:protocol/logger.dart';
+import 'package:protocol/utils.dart';
 
 import '../board/board.dart';
 
@@ -78,7 +80,7 @@ enum F4Command {
 /// | 2     | Sensor calibration offset into EEPROM bank 1 (typically `0x90`) |
 /// | 3     | Sensitivity mode |
 
-final class FeatureReport with USBGadgetLogger {
+final class FeatureReport with Ds3Logger {
   /// Creates a feature report handler backed by [board].
   FeatureReport(this._board) : state = Uint8List(4);
 

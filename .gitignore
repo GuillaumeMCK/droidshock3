@@ -1,0 +1,9 @@
+.dart_tool/
+
+# Signing keys: keep them out of the repo.
+*.jks
+*.keystore
+key.properties
+
+# tool/build_bridge.sh output.
+/build/

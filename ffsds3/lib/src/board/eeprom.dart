@@ -21,7 +21,7 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:usb_gadget/usb_gadget.dart';
+import 'package:protocol/utils.dart';
 
 /// Command types carried in Feature Report **F1** (EEPROM access).
 enum EepromCommand {
@@ -180,7 +180,7 @@ final class Eeprom {
         ..setAll(0x90, [
           // unknown — preserving factory bytes
           0x00, 0x6E, 0x03, 0x92, 0x00, 0x6A,
-          //accel X bias = 0 , accel X gain = 1024 (0x0400)
+          // accel X bias = 0 , accel X gain = 1024 (0x0400)
           0x00, 0x00, 0x00, 0x04,
           // accel Y bias = 0, accel Y gain = 1024 (0x0400)
           0x00, 0x00, 0x00, 0x04,

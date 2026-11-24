@@ -99,7 +99,8 @@ class ConstrainedListView extends StatelessWidget {
     return Align(
       alignment: alignment,
       child: LayoutBuilder(
-        builder: (_, constraints) => _buildConstrainedContent(constraints),
+        builder: (context, constraints) =>
+            _buildConstrainedContent(constraints),
       ),
     );
   }

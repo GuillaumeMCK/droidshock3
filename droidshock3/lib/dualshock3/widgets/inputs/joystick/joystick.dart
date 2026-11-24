@@ -1,4 +1,6 @@
 import 'package:flutter/gestures.dart';
+import 'package:lucide_icons_flutter/lucide_icons_200.dart';
+
 import '/common/common.dart';
 import 'joystick_hook.dart';
 
@@ -95,7 +97,7 @@ final class _Knob extends StatelessWidget {
           borderRadius: .circular(knobSize / 2),
         ),
         child: Icon(
-          LucideIcons.target200,
+          LucideIcons200.target,
           size: knobSize / 1.8,
           color: isPressed ? colorScheme.ds3Fg : colorScheme.ds3Border,
         ),

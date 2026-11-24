@@ -19,10 +19,9 @@ class PlayerId extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final ShadThemeData(:textTheme) = context.theme;
-    final bridge = context.read<BridgeCubit>();
     final leds = useState<List<bool>>(_off);
     usePeriodic(250.ms, () {
-      leds.value = bridge.ledStates;
+      leds.value = context.read<BridgeCubit>().ledStates;
     });
     return DefaultTextStyle(
       style: textTheme.muted.mono.xxs,

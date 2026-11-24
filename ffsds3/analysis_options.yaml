@@ -1,6 +1,6 @@
 include: package:lints/recommended.yaml
 plugins:
-  leancode_lint:
+  leancode_lint: ^28.0.0
 
 analyzer:
   errors:
