@@ -8,9 +8,6 @@ import 'package:using/using.dart';
 import 'logger.dart';
 import 'session.dart';
 
-/// How often to push DS3 output reports to the connected client.
-const _kOutputInterval = Duration(milliseconds: 500);
-
 /// Single-client TCP bridge between a DualShock 3 USB gadget and a Flutter client.
 final class Ds3Bridge with Releasable, BridgeLogger {
   Ds3Bridge._(
@@ -21,9 +18,7 @@ final class Ds3Bridge with Releasable, BridgeLogger {
     String? usbConfigBak,
   }) : _usbConfigBak = usbConfigBak {
     _server.listen(_onIncoming, onDone: release, cancelOnError: false);
-    _outputTimer = .periodic(_kOutputInterval, (_) {
-      _onSend(Op.outputReport, _ds3.output.bytes);
-    });
+    _ds3.onOutputReport = (_) => _sendOutputReport();
     if (clientPid != null) _watchPid(clientPid);
   }
 
@@ -54,7 +49,6 @@ final class Ds3Bridge with Releasable, BridgeLogger {
 
   Session? _session;
   String? _usbConfigBak;
-  Timer? _outputTimer;
   Timer? _watchdogTimer;
 
   int get port => _server.port;
@@ -75,17 +69,14 @@ final class Ds3Bridge with Releasable, BridgeLogger {
       onFrame: _onFrame,
       onClose: _onSessionClosed,
     );
+    _sendOutputReport(); // The host's last one, LEDs included.
   }
 
-  void _onSend(Op op, Uint8List frame) {
+  /// Forwards the host's output report as it arrives, rumble included.
+  void _sendOutputReport() {
     final session = _session;
     if (session == null || session.isReleased) return;
-    switch (op) {
-      case Op.outputReport:
-        session.send(op, _ds3.output.bytes);
-      default:
-        throw UnimplementedError();
-    }
+    session.send(Op.outputReport, _ds3.output.bytes);
   }
 
   void _onFrame(Op op, Uint8List frame) {
@@ -134,8 +125,7 @@ final class Ds3Bridge with Releasable, BridgeLogger {
     _watchdogTimer?.cancel();
     _watchdogTimer = null;
 
-    _outputTimer?.cancel();
-    _outputTimer = null;
+    _ds3.onOutputReport = null;
 
     _session?.release();
     _session = null;
