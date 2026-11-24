@@ -29,7 +29,7 @@ final class Ds3Bridge with Releasable, BridgeLogger {
 
   static Future<Ds3Bridge> start({int? clientPid, String? usbConfigBak}) async {
     final (gadget, ds3) = createDualshock3();
-    late final RawServerSocket server;
+    RawServerSocket? server;
     try {
       server = await RawServerSocket.bind(InternetAddress.loopbackIPv4, 0);
       await gadget.bind();
@@ -41,7 +41,7 @@ final class Ds3Bridge with Releasable, BridgeLogger {
         usbConfigBak: usbConfigBak,
       );
     } catch (_) {
-      await server.close();
+      await server?.close();
       await gadget.remove();
       rethrow;
     }

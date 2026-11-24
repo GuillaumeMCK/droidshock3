@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:protocol/protocol.dart';
@@ -96,35 +97,51 @@ final class Dualshock3 extends HidFunctionFs with Ds3Logger implements Board {
   final OutputReport output;
   late final FeatureReport features;
 
-  /// Whether the host still has the function enabled; a suspended bus
-  /// resumes to [CustomFunctionState.enabled] without a new [onEnable].
-  bool get _active => state == .enabled || state == .suspended;
+  StreamSubscription<void>? _epInSub;
+  StreamSubscription<Uint8List>? _epOutSub;
+
+  /// Whether the host has the function enabled and input streaming on.
+  bool get _streaming => state == .enabled && features.inputStreamingEnabled;
 
   @override
-  Future<void> onEnable() async {
-    epOut.stream().listen(
+  void onEnable() {
+    _epOutSub ??= epOut.stream().listen(
       (bytes) => switch (bytes) {
         [0x01, ...final data] => output.update(data),
         _ => log?.warn('Received unrecognized output report: ${bytes.xxd()}'),
       },
       onError: onError,
+      onDone: () => _epOutSub = null,
     );
-    // Unlike [InEndpoint.writeWhile], keeps polling while streaming is off:
-    // the host turns it on with a SET_REPORT after enabling the function.
-    while (_active) {
-      final next = Future<void>.delayed(config.reportInterval);
-      if (state == .enabled && features.inputStreamingEnabled) {
-        try {
-          await epIn.write([
-            0x01,
-            ...input.bytes,
-          ], timeout: config.reportInterval);
-        } on GadgetException {
-          // Queue full or endpoint not ready: drop this report.
-        }
-      }
-      await next;
-    }
+    _stream();
+  }
+
+  @override
+  void onResume() => _stream();
+
+  /// The streams end on their own; dropped here so that an enable right
+  /// after doesn't find the old ones.
+  @override
+  void onDisable() {
+    unawaited(_epOutSub?.cancel());
+    unawaited(_epInSub?.cancel());
+    _epOutSub = null;
+    _epInSub = null;
+  }
+
+  /// Sends input reports while [_streaming]. The host turns streaming on
+  /// with a SET_REPORT after enabling the function, so this also runs after
+  /// each SET_REPORT.
+  void _stream() {
+    if (!_streaming) return;
+    _epInSub ??= epIn
+        .writeWhile(
+          condition: () => _streaming,
+          data: () => [0x01, ...input.bytes],
+          interval: config.reportInterval,
+        )
+        .asStream()
+        .listen(null, onError: onError, onDone: () => _epInSub = null);
   }
 
   @override
@@ -144,14 +161,25 @@ final class Dualshock3 extends HidFunctionFs with Ds3Logger implements Board {
 
   @override
   void onSetReport(HidReportType type, int reportId, Uint8List data) {
-    return switch ((type, reportId)) {
-      (.output, 0x01) => output.update(data),
-      (.feature, 0xEF) => features.setSensorState(data),
-      (.feature, 0xF1) => features.setEepromAccess(data),
-      (.feature, 0xF4) => features.handleCommand(data),
-      (.feature, 0xF5) => features.setPairedHost(data),
-      _ => _unhandled('SET_REPORT', type, reportId),
-    };
+    switch ((type, reportId)) {
+      case (.output, 0x01):
+        // Starts with the report ID, like reports on the OUT endpoint.
+        output.update(switch (data) {
+          [0x01, ...final report] => report,
+          _ => data,
+        });
+      case (.feature, 0xEF):
+        features.setSensorState(data);
+      case (.feature, 0xF1):
+        features.setEepromAccess(data);
+      case (.feature, 0xF4):
+        features.handleCommand(data);
+      case (.feature, 0xF5):
+        features.setPairedHost(data);
+      default:
+        _unhandled('SET_REPORT', type, reportId);
+    }
+    _stream(); // EF and F4 can turn input streaming on.
   }
 
   /// Logs an unsupported request, which the host then sees stalled.
@@ -162,5 +190,5 @@ final class Dualshock3 extends HidFunctionFs with Ds3Logger implements Board {
 
   @override
   void onError(Object error, StackTrace stack) =>
-      log?.error('Function error', error, stack);
+      stderr.writeln('[Dualshock3] $error\n$stack');
 }

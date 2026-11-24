@@ -4,3 +4,6 @@
 *.jks
 *.keystore
 key.properties
+
+# tool/build_bridge.sh output.
+/build/

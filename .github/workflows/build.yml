@@ -77,6 +77,14 @@ jobs:
         working-directory: droidshock3
         run: dart run build_runner build --delete-conflicting-outputs
 
+      # The bridge embeds usb_gadget's Rust library, which
+      # tool/build_bridge.sh builds; an empty one is enough to analyze it.
+      - name: Generate bridge code
+        working-directory: bridge
+        run: |
+          mkdir -p assets && touch assets/libusb_gadget_native.so
+          dart run build_runner build --delete-conflicting-outputs
+
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed protocol ffsds3 bridge droidshock3/lib
 

@@ -111,13 +111,18 @@ final class OutputReport with Ds3Logger {
   final Uint8List bytes;
 
   /// Update the internal state with fresh data from the host.
+  ///
+  /// Hosts may send it shorter (Linux's hid-sony sends 35 bytes): the rest
+  /// is zeroed.
   void update(List<int> newBytes) {
-    if (newBytes.length != 48) {
+    if (newBytes.isEmpty || newBytes.length > 48) {
       return log?.warn(
-        'Output report must be exactly 48 bytes (${newBytes.length})',
+        'Output report must be 1 to 48 bytes (${newBytes.length})',
       );
     }
-    bytes.setAll(0, newBytes);
+    bytes
+      ..fillRange(0, bytes.length, 0)
+      ..setAll(0, newBytes);
     log?.debug('Output report updated: $this');
   }
 
