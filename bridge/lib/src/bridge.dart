@@ -8,132 +8,127 @@ import 'package:using/using.dart';
 import 'logger.dart';
 import 'session.dart';
 
-/// Single-client TCP bridge between a DualShock 3 USB gadget and a Flutter client.
+/// Bridges the DualShock 3 USB gadget and one client on a loopback TCP port:
+/// the client's input reports go to the host, the host's output reports to
+/// the client.
 final class Ds3Bridge with Releasable, BridgeLogger {
-  Ds3Bridge._(
-    this._server,
-    this._gadget,
-    this._ds3, {
-    int? clientPid,
-    String? usbConfigBak,
-  }) : _usbConfigBak = usbConfigBak {
-    _server.listen(_onIncoming, onDone: release, cancelOnError: false);
+  Ds3Bridge._(this._server, this._gadget, this._ds3, {this.usbConfigBackup}) {
+    _server.listen(_onConnection, onDone: release);
     _ds3.onOutputReport = (_) => _sendOutputReport();
-    if (clientPid != null) _watchPid(clientPid);
   }
 
-  static Future<Ds3Bridge> start({int? clientPid, String? usbConfigBak}) async {
+  /// Binds the gadget to the USB controller and starts listening.
+  ///
+  /// Shuts down when the client asks to, or once [clientPid] exits, if given.
+  /// Then restores `sys.usb.config` to [usbConfigBackup], if given.
+  static Future<Ds3Bridge> start({
+    int? clientPid,
+    String? usbConfigBackup,
+  }) async {
     final (gadget, ds3) = createDualshock3();
     RawServerSocket? server;
     try {
       server = await RawServerSocket.bind(InternetAddress.loopbackIPv4, 0);
       await gadget.bind();
-      return Ds3Bridge._(
-        server,
-        gadget,
-        ds3,
-        clientPid: clientPid,
-        usbConfigBak: usbConfigBak,
-      );
     } catch (_) {
       await server?.close();
       await gadget.remove();
       rethrow;
     }
+    final bridge = Ds3Bridge._(
+      server,
+      gadget,
+      ds3,
+      usbConfigBackup: usbConfigBackup,
+    );
+    if (clientPid != null) bridge._watchClient(clientPid);
+    return bridge;
   }
 
+  final String? usbConfigBackup;
+
+  final RawServerSocket _server;
   final Gadget _gadget;
   final Dualshock3 _ds3;
-  final RawServerSocket _server;
   final Completer<void> _released = .new();
 
   Session? _session;
-  String? _usbConfigBak;
-  Timer? _watchdogTimer;
+  Timer? _clientWatchdog;
 
   int get port => _server.port;
 
+  /// Completes once [release] has removed the gadget.
   Future<void> get released => _released.future;
 
-  Future<void> _onIncoming(RawSocket socket) async {
-    if (_session != null) {
+  void _onConnection(RawSocket socket) {
+    if (_session case final Session session) {
       log.warn(
-        'Rejected connection from ${socket.remoteAddress} - already have a client',
+        'Rejected ${socket.remoteAddress.address}: '
+        '${session.address} is connected',
       );
       socket.close();
       return;
     }
-    log.info('Client connected: ${socket.remoteAddress.address}');
-    _session = .new(
-      socket: socket,
+    final Session session = _session = Session(
+      socket,
       onFrame: _onFrame,
       onClose: _onSessionClosed,
     );
+    log.info('Client connected: ${session.address}');
     _sendOutputReport(); // The host's last one, LEDs included.
   }
 
-  /// Forwards the host's output report as it arrives, rumble included.
-  void _sendOutputReport() {
-    final session = _session;
-    if (session == null || session.isReleased) return;
-    session.send(Op.outputReport, _ds3.output.bytes);
-  }
-
-  void _onFrame(Op op, Uint8List frame) {
-    switch (op) {
-      case Op.inputReport:
-        _ds3.input.update(frame);
-      case Op.shutdown:
-        release();
-      default:
-        throw UnimplementedError();
-    }
-  }
-
   void _onSessionClosed() {
-    log.info('Client disconnected: ${_session?.remoteAddress}');
-    _session?.release();
+    log.info('Client disconnected: ${_session?.address}');
     _session = null;
   }
 
-  void _watchPid(int pid) {
+  void _onFrame(Op op, Uint8List payload) => switch (op) {
+    .inputReport => _ds3.input.update(payload),
+    .shutdown => release(),
+    .outputReport => log.warn('Unexpected output report from the client'),
+  };
+
+  /// Forwards the host's output report, rumble included, as it arrives.
+  void _sendOutputReport() => _session?.send(.outputReport, _ds3.output.bytes);
+
+  void _watchClient(int pid) {
     log.info('Watching client PID $pid');
-    _watchdogTimer = .periodic(kPidPollInterval, (_) async {
-      if (!Directory('/proc/$pid').existsSync()) {
-        await release();
-      }
+    _clientWatchdog = .periodic(kPidPollInterval, (_) {
+      if (!Directory('/proc/$pid').existsSync()) release();
     });
   }
 
-  Future<void> _restoreUsbConfig() async {
-    if (_usbConfigBak == null) return;
+  Future<void> _restoreUsbConfig(String config) async {
     try {
-      await Process.run('sh', [
-        '-c',
-        'setprop sys.usb.config "$_usbConfigBak"',
+      final ProcessResult result = await Process.run('setprop', [
+        'sys.usb.config',
+        config,
       ]);
+      if (result.exitCode != 0) {
+        log.error('Failed to restore USB config: ${result.stderr}');
+      }
     } on Object catch (err, st) {
       log.error('Failed to restore USB config:', err, st);
     }
   }
 
+  /// Stops the bridge: the client, the server, then the gadget. Further
+  /// calls do nothing; [released] completes when it's done.
   @override
   Future<void> release() async {
     if (isReleased) return;
     super.release();
 
-    _watchdogTimer?.cancel();
-    _watchdogTimer = null;
-
+    _clientWatchdog?.cancel();
     _ds3.onOutputReport = null;
-
     _session?.release();
-    _session = null;
 
     await _server.close();
     await _gadget.remove();
-
-    await _restoreUsbConfig();
+    if (usbConfigBackup case final String config) {
+      await _restoreUsbConfig(config);
+    }
     _released.complete();
   }
 }

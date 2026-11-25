@@ -1,5 +1,6 @@
 import 'package:ffsds3/ffsds3.dart';
 
 mixin BridgeLogger implements ILogger {
-  Logger get log => Logger('Bridge');
+  @override
+  Logger get log => const Logger('Bridge');
 }
