@@ -23,6 +23,11 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
   final List<int> _buffer = [];
   final StreamController<OutputReport> _outputReports = .broadcast();
 
+  /// Since the last input report sent: they're sent at most once per
+  /// [kInputReportInterval], which is as often as the gadget reads them.
+  final Stopwatch _sinceSend = .new();
+  Timer? _sendTimer;
+
   /// Output reports from the host, as the bridge forwards them: each one, as
   /// it arrives, changed or not, and the last one on connect.
   Stream<OutputReport> get outputReports => _outputReports.stream;
@@ -54,6 +59,17 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
     if (input != null && value != null) {
       _inputReport.setInput(input, value);
     }
+    if (_sendTimer != null) return; // Sends the latest state when it fires.
+    final wait = kInputReportInterval - _sinceSend.elapsed;
+    if (!_sinceSend.isRunning || wait <= .zero) return _sendReport();
+    _sendTimer = .new(wait, _sendReport);
+  }
+
+  void _sendReport() {
+    _sendTimer = null;
+    _sinceSend
+      ..reset()
+      ..start();
     _socket?.add([Op.inputReport.byte, ..._inputReport.bytes]);
   }
 
@@ -115,7 +131,9 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
     }
 
     final [bridgePid, port] = [...infos.split(':').map(int.parse)];
-    _socket ??= await Socket.connect(InternetAddress.loopbackIPv4, port);
+    _socket ??= await Socket.connect(InternetAddress.loopbackIPv4, port)
+      // Frames are small and latency-bound: don't let Nagle hold them.
+      ..setOption(SocketOption.tcpNoDelay, true);
     _outputStream ??= _socket?.asBroadcastStream(
       onListen: (subscription) => _listener ??= subscription,
       onCancel: (subscription) => _listener = null,
@@ -130,6 +148,11 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
       _socket?.add(Uint8List(Op.frameLength)..[0] = Op.shutdown.byte);
     }
 
+    _sendTimer?.cancel();
+    _sendTimer = null;
+    _sinceSend
+      ..stop()
+      ..reset();
     await _listener?.cancel();
     _listener = null;
     await _socket?.close();
