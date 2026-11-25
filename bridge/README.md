@@ -27,7 +27,7 @@ when a complete frame is available, handling partial TCP reads correctly.
 |-----------------|----------------|--------|----------------------------------------------|
 | Client → Server | `inputReport`  | `0x01` | DS3 input report — forwarded to the USB host |
 | Client → Server | `shutdown`     | `0xFF` | Graceful shutdown (payload ignored)          |
-| Server → Client | `outputReport` | `0x10` | DS3 output report — pushed every 10 ms       |
+| Server → Client | `outputReport` | `0x10` | DS3 output report — forwarded as it arrives  |
 
 ## Usage
 
@@ -44,7 +44,7 @@ sudo ./bridge \
 On startup the bridge:
 
 1. Registers the DualShock 3 USB gadget and binds it to the default UDC.
-2. Binds a TCP server on `0.0.0.0` at an ephemeral loopback port.
+2. Binds a TCP server on `127.0.0.1` at an ephemeral port.
 3. Writes `<pid>:<port>` to the process file so the Flutter client can discover the port.
 4. Deletes the process file on clean shutdown.
 
@@ -62,8 +62,8 @@ The bridge shuts down cleanly when any of the following occurs:
 
 - The client sends a `shutdown` (`0xFF`) frame.
 - The watched PID disappears from `/proc`.
-- The TCP connection closes.
+A client disconnecting doesn't shut it down: another can connect.
 
-On shutdown, in order: the output timer and watchdog are cancelled, the session is
-released, the TCP server is closed, the USB gadget is removed, and the system USB config
-is restored if `--usb-config-bak` was provided.
+On shutdown, in order: the watchdog is cancelled, the session is closed, the TCP server
+is closed, the USB gadget is removed, and the system USB config is restored if
+`--usb-config-bak` was provided.
