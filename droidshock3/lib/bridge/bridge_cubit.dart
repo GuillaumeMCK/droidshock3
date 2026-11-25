@@ -21,6 +21,11 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
   final InputReport _inputReport = .new();
   final OutputReport _outputReport = .new();
   final List<int> _buffer = [];
+  final StreamController<OutputReport> _outputReports = .broadcast();
+
+  /// Output reports from the host, as the bridge forwards them: each one, as
+  /// it arrives, changed or not, and the last one on connect.
+  Stream<OutputReport> get outputReports => _outputReports.stream;
 
   List<bool> get ledStates => _outputReport.ledStates;
 
@@ -34,6 +39,7 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
       switch (Op.parseServerFrame(_buffer[0])) {
         case .outputReport:
           _outputReport.update(_buffer.sublist(1, Op.frameLength));
+          _outputReports.add(_outputReport);
         default:
           throw UnimplementedError();
       }
@@ -150,6 +156,7 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
   @override
   Future<void> close() async {
     await shutdown();
+    await _outputReports.close();
     emit(.closed(state));
     return super.close();
   }

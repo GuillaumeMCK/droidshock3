@@ -102,6 +102,9 @@ final class LedPattern {
       Object.hash(timeEnabled, timeDisabled, timeOn, timeOff, repeatCount);
 }
 
+/// Rumble intensities from 0 to 1, for [duration]; both 0 is off.
+typedef Rumble = ({double low, double high, Duration duration});
+
 /// DualShock 3 Output Report (Parsed from Host)
 final class OutputReport with Ds3Logger {
   OutputReport({Uint8List? bytes})
@@ -149,6 +152,26 @@ final class OutputReport with Ds3Logger {
 
   /// Whether the left (strong) motor is currently active.
   bool get isLeftMotorActive => rumbleLeftDuration > 0 && rumbleLeftPower > 0;
+
+  /// The rumble for a dual-motor gamepad, with intensities from 0 to 1: the
+  /// left (strong) motor drives the low-frequency one, the right (weak, on or
+  /// off) motor the high-frequency one.
+  ///
+  /// The duration is the longest active motor's, in ~10 ms units; 0xFF means
+  /// until changed, given as 30 s, the most gamepad APIs accept.
+  Rumble get rumble {
+    Duration duration(int units) => units == 0xFF
+        ? const Duration(seconds: 30)
+        : Duration(milliseconds: units * 10);
+    return (
+      low: isLeftMotorActive ? rumbleLeftPower / 0xFF : 0,
+      high: isRightMotorActive ? 1 : 0,
+      duration: [
+        if (isLeftMotorActive) duration(rumbleLeftDuration),
+        if (isRightMotorActive) duration(rumbleRightDuration),
+      ].fold(Duration.zero, (a, b) => a > b ? a : b),
+    );
+  }
 
   /// Raw LED flag byte (byte 9).
   /// Bits 1-4 correspond to LEDs 1-4; other bits are reserved.
