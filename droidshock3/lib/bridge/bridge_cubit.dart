@@ -95,6 +95,8 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
       chmod +x $kExePath
 
       export LD_LIBRARY_PATH=$kBridgeDir
+      # Gadget traffic (feature and output reports) in the log page.
+      export FFSDS3_LOG=true FFSDS3_LOG_LEVEL=0 # Debug.
       nohup $kExePath --process-path $processPath --client-pid $pid --usb-config-bak "\$USB_CONFIG_BAK" > $logPath 2>&1 &
     
       timeout 3 sh -c 'until [ -f $processPath ]; do sleep 0.1; done'
