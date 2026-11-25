@@ -1,11 +1,11 @@
-import 'dart:io';
-
 export 'core.dart';
 export 'mixin.dart';
 export 'printer.dart';
 
-// Read at runtime: `dart build cli` takes no `-D` defines.
-final bool kLogEnabled = Platform.environment['FFSDS3_LOG'] == 'true';
-final bool kLogColors = Platform.environment['FFSDS3_LOG_COLORS'] == 'true';
-final int kLogLevel =
-    int.tryParse(Platform.environment['FFSDS3_LOG_LEVEL'] ?? '') ?? 3;
+// Set at compile time: tool/build_bridge.sh passes them to the bridge.
+const bool kLogEnabled = bool.fromEnvironment('FFSDS3_LOG');
+const bool kLogColors = bool.fromEnvironment('FFSDS3_LOG_COLORS');
+const int kLogLevel = int.fromEnvironment(
+  'FFSDS3_LOG_LEVEL',
+  defaultValue: 3, // Warning.
+);

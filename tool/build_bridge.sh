@@ -28,6 +28,9 @@
 #   DART_ANDROID_BUILD  the Android SDK build's output directory (default
 #                       ~/Temp/dart-sdk-src/sdk/xcodebuild/ReleaseAndroidARM64)
 #   ANDROID_NDK_HOME    the NDK (default: the newest in the Android SDK)
+#   FFSDS3_LOG          the bridge's device logs, true or false (default true)
+#   FFSDS3_LOG_LEVEL    the lowest level logged: 0 debug, 1 info, 2 success,
+#                       3 warning, 4 error, 5 fatal (default 1, info)
 set -euo pipefail
 
 root=$(cd "$(dirname "$0")/.." && pwd)
@@ -120,6 +123,7 @@ step "3. bridge.dill"
 "$sdk/bin/dartaotruntime" "$sdk/bin/snapshots/gen_kernel_aot.dart.snapshot" \
   --platform "$sdk/lib/_internal/vm_platform_product.dill" \
   --aot -Ddart.vm.product=true --target-os android \
+  -DFFSDS3_LOG="${FFSDS3_LOG:-true}" -DFFSDS3_LOG_LEVEL="${FFSDS3_LOG_LEVEL:-1}" \
   --native-assets "$out/native_assets.json" \
   --packages "$root/.dart_tool/package_config.json" \
   -o "$out/bridge.dill" "$root/bridge/bin/bridge.dart"
