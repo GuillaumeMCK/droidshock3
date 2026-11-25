@@ -23,7 +23,6 @@ dependencies:
   injectable: ^3.0.0
   leancode_hooks: ^0.1.2+1
   path_provider: ^2.1.6
-  root_plus: ^1.1.0
   shadcn_ui: ^0.61.2
   gamepads: ^0.1.15
   sensors_plus: ^7.1.1

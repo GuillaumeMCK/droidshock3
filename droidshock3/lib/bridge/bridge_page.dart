@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 
 import '/common/common.dart';
 import 'bridge_cubit.dart';
@@ -97,6 +98,17 @@ class _BridgeControls extends HookWidget {
                   state.type.name.toUpperCase(),
                   style: textTheme.xxs.semibold,
                 ),
+              ),
+              // For bug reports.
+              ShadButton.secondary(
+                onPressed: () async {
+                  final File logFile = File(BridgeCubit.logPath);
+                  if (!logFile.existsSync()) return;
+                  await Clipboard.setData(
+                    ClipboardData(text: await logFile.readAsString()),
+                  );
+                },
+                leading: Icon(LucideIcons.copy, size: 14),
               ),
 
               Expanded(

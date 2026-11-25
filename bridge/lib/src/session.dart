@@ -1,83 +1,89 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:protocol/protocol.dart';
 import 'package:using/using.dart';
 
 import 'logger.dart';
 
-import 'package:protocol/protocol.dart';
+typedef FrameHandler = void Function(Op op, Uint8List payload);
 
-typedef FrameHandler = void Function(Op op, Uint8List data);
-typedef CloseHandler = void Function();
-
-/// A single connected client session.
-///
-/// Handles framing over TCP — accumulating bytes into a buffer and
-/// dispatching complete [Op.frameLength]-byte frames to [onFrame].
-/// Calls [onClose] once when the client disconnects or an error occurs.
+/// The connected client: splits what it sends into [Op.frameLength]-byte
+/// frames for [onFrame], and calls [onClose] once when it disconnects.
 final class Session with Releasable, BridgeLogger {
-  Session({
-    required RawSocket socket,
-    required this.onFrame,
-    required this.onClose,
-  }) : _socket = socket {
-    remoteAddress = '${socket.remoteAddress.address}:${socket.remotePort}';
-    socket.listen(
-      _onEvent,
-      onDone: release,
-      onError: _onError,
-      cancelOnError: false,
-    );
+  Session(this._socket, {required this.onFrame, required this.onClose})
+    : address = '${_socket.remoteAddress.address}:${_socket.remotePort}' {
+    // Frames are small and latency-bound: don't let Nagle hold them.
+    _socket
+      ..setOption(SocketOption.tcpNoDelay, true)
+      ..listen(_onEvent, onError: _onError, onDone: release);
   }
 
-  late final String remoteAddress;
-
+  final String address;
   final FrameHandler onFrame;
-  final CloseHandler onClose;
+  final void Function() onClose;
 
   final RawSocket _socket;
-  final List<int> _buffer = []; // growable buffer for incoming bytes
 
-  /// Writes [frame] to the client. Returns false if the session is released.
-  bool send(Op op, List<int> frame) {
-    if (isReleased) return false;
-    _socket.write([op.byte, ...frame]);
-    return true;
+  /// Received bytes not yet dispatched: at most a partial frame between reads.
+  final List<int> _pending = [];
+
+  void send(Op op, List<int> payload) {
+    if (!isReleased) _socket.write([op.byte, ...payload]);
   }
 
-  void _onError(Object error, StackTrace st) {
-    log.error('Session $remoteAddress error:', error, st);
+  void _onEvent(RawSocketEvent event) => switch (event) {
+    .read => _onRead(_socket.read()),
+    .readClosed || .closed => release(),
+    _ => null,
+  };
+
+  void _onError(Object error, StackTrace stack) {
+    log.error('Session $address failed:', error, stack);
     release();
   }
 
-  void _onEvent(RawSocketEvent event) {
-    switch (event) {
-      case .closed:
-        onClose();
-      case .read:
-        final chunk = _socket.read();
-        if (chunk case null || []) return;
-        _buffer.addAll(chunk);
+  /// Dispatches the complete frames received so far. Input reports are whole
+  /// states, so of consecutive ones only the last is dispatched.
+  void _onRead(Uint8List? bytes) {
+    if (bytes == null) return;
+    _pending.addAll(bytes);
 
-        while (_buffer.length >= Op.frameLength) {
-          final op = Op.parseClientFrame(_buffer[0]);
-          if (op == null) {
-            _buffer.removeRange(0, Op.frameLength);
-            continue;
-          }
-          final data = Uint8List.fromList(_buffer.sublist(1, Op.frameLength));
-          _buffer.removeRange(0, Op.frameLength);
-          onFrame(op, data);
-        }
-      case .write:
+    int? lastInput;
+    int offset = 0;
+    while (offset + Op.frameLength <= _pending.length) {
+      switch (Op.parseClientFrame(_pending[offset])) {
+        case .inputReport:
+          lastInput = offset;
+        case final Op op:
+          if (lastInput != null) _dispatch(.inputReport, lastInput);
+          lastInput = null;
+          _dispatch(op, offset);
+        case null:
+          log.warn('Unknown frame op ${_pending[offset]}: skipped');
+      }
+      offset += Op.frameLength;
     }
+    if (lastInput != null) _dispatch(.inputReport, lastInput);
+    _pending.removeRange(0, offset);
+  }
+
+  /// Hands [onFrame] the payload of the frame at [offset] in [_pending].
+  void _dispatch(Op op, int offset) {
+    const payloadLength = Op.frameLength - 1;
+    onFrame(
+      op,
+      Uint8List(payloadLength)
+        ..setRange(0, payloadLength, _pending, offset + 1),
+    );
   }
 
   @override
   void release() {
     if (isReleased) return;
-    _buffer.clear();
     super.release();
+    _pending.clear();
+    _socket.close();
     onClose();
   }
 }

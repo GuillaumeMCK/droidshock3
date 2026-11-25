@@ -71,8 +71,8 @@ final class Dualshock3 extends HidFunctionFs with Ds3Logger implements Board {
           0x01, 0xB1, 0x02, 0xC0, 0xC0, //
         ],
         config: const .bidirectional(
-          pollInterval: .new(milliseconds: 8),
-          reportInterval: .new(milliseconds: 8),
+          pollInterval: kInputReportInterval,
+          reportInterval: kInputReportInterval,
         ),
       ) {
     features = FeatureReport(this);
@@ -148,6 +148,7 @@ final class Dualshock3 extends HidFunctionFs with Ds3Logger implements Board {
   }
 
   void _onOutputReport(List<int> data) {
+    if (data.isEmpty) return; // Nothing but the report ID.
     output.update(data);
     onOutputReport?.call(output);
   }

@@ -1,6 +1,14 @@
 /// Where the bridge lives on the device, with its process file and log.
 const kBridgeDir = '/data/local/tmp/ds3_bridge';
 
+/// How often the gadget sends the PS3 an input report: the latest state the
+/// client sent, so the client needn't send more often.
+const kInputReportInterval = Duration(milliseconds: 8);
+
+/// The first line the bridge writes to stderr when it fails, for the app to
+/// spot in its log.
+const kBridgeFatalError = '--- Bridge encountered a fatal error ---';
+
 /// How often the bridge checks whether the client process is still alive.
 const kPidPollInterval = Duration(seconds: 1);
 
