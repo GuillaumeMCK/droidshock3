@@ -148,6 +148,7 @@ final class Dualshock3 extends HidFunctionFs with Ds3Logger implements Board {
   }
 
   void _onOutputReport(List<int> data) {
+    if (data.isEmpty) return; // Nothing but the report ID.
     output.update(data);
     onOutputReport?.call(output);
   }

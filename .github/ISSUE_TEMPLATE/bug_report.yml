@@ -1,0 +1,38 @@
+name: Bug report
+description: Something doesn't work on your device.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Most problems depend on the device, its kernel and its root
+        manager, so the bridge log is the most useful part of a report.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: input
+    id: host
+    attributes:
+      label: Console
+      placeholder: PS3 Slim, firmware 4.92
+    validations:
+      required: true
+  - type: textarea
+    id: bridge-log
+    attributes:
+      label: Bridge log
+      description: |
+        Double-tap the USB icon at the bottom of the main screen to open the log page, then
+        copy everything it shows. It starts with a description of your device.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      placeholder: "1.0.0"

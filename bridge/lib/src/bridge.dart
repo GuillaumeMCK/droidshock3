@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:ffsds3/ffsds3.dart';
 import 'package:using/using.dart';
 
+import 'android.dart';
 import 'logger.dart';
 import 'session.dart';
 
@@ -99,20 +100,6 @@ final class Ds3Bridge with Releasable, BridgeLogger {
     });
   }
 
-  Future<void> _restoreUsbConfig(String config) async {
-    try {
-      final ProcessResult result = await Process.run('setprop', [
-        'sys.usb.config',
-        config,
-      ]);
-      if (result.exitCode != 0) {
-        log.error('Failed to restore USB config: ${result.stderr}');
-      }
-    } on Object catch (err, st) {
-      log.error('Failed to restore USB config:', err, st);
-    }
-  }
-
   /// Stops the bridge: the client, the server, then the gadget. Further
   /// calls do nothing; [released] completes when it's done.
   @override
@@ -127,7 +114,7 @@ final class Ds3Bridge with Releasable, BridgeLogger {
     await _server.close();
     await _gadget.remove();
     if (usbConfigBackup case final String config) {
-      await _restoreUsbConfig(config);
+      await Android.restoreUsb(config);
     }
     _released.complete();
   }

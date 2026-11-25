@@ -18,32 +18,56 @@ const kNativeLibraryPath = '$kBridgeDir/libusb_gadget_native.so';
 
 const kProcessPath = '$kBridgeDir/process';
 
+/// Once started: a fatal error still releases it, giving USB back.
+Ds3Bridge? _bridge;
+
 /// Usage: bridge [--process-path <path>] [--client-pid <pid>]
-/// [--usb-config-bak <sys.usb.config>]
 ///
-/// Writes `<pid>:<port>` to the process file once listening, and deletes it
-/// on shutdown.
+/// Stops a bridge left running, takes USB from Android, and writes
+/// `<pid>:<port>` to the process file once listening. Stops on the client's
+/// shutdown frame, once the client exits, or on SIGTERM or SIGINT; then
+/// gives USB back and deletes the process file.
 void main(List<String> args) => runZonedGuarded(() => _run(args), _onFatal);
 
 Future<void> _run(List<String> args) async {
   final Map<String, String> options = _parseOptions(args);
   final File processFile = File(options['--process-path'] ?? kProcessPath);
 
+  Android.leaveProcessGroup();
+  stdout.writeln('--- Device ---\n${await Android.describe()}\n---');
+  await Android.stopPrevious(processFile, kBridgeDir);
   // Before Ds3Bridge.start: usb_gadget loads the library on first use.
   _writeNativeLibrary();
+  await Android.mountConfigfs();
 
-  final Ds3Bridge bridge = await Ds3Bridge.start(
-    clientPid: int.tryParse(options['--client-pid'] ?? ''),
-    usbConfigBackup: options['--usb-config-bak'],
-  );
+  final String usbConfig = await Android.takeUsb();
+  final Ds3Bridge bridge;
+  try {
+    bridge = _bridge = await Ds3Bridge.start(
+      clientPid: int.tryParse(options['--client-pid'] ?? ''),
+      usbConfigBackup: usbConfig,
+    );
+  } catch (_) {
+    await Android.restoreUsb(usbConfig);
+    rethrow;
+  }
+  for (final ProcessSignal signal in [.sigterm, .sigint]) {
+    signal.watch().listen((ProcessSignal signal) {
+      stdout.writeln('Received $signal: shutting down');
+      bridge.release();
+    });
+  }
+
   stdout.writeln(
-    'listening on ${InternetAddress.loopbackIPv4.address}:'
-    '${bridge.port}',
+    'listening on ${InternetAddress.loopbackIPv4.address}:${bridge.port}',
   );
-  await processFile.writeAsString('$pid:${bridge.port}');
+  // Renamed into place: the app reads it as soon as it exists.
+  final File partial = File('${processFile.path}.partial');
+  await partial.writeAsString('$pid:${bridge.port}');
+  await partial.rename(processFile.path);
 
   await bridge.released;
-  await processFile.delete();
+  if (processFile.existsSync()) await processFile.delete();
   await _exit(0);
 }
 
@@ -67,10 +91,14 @@ void _writeNativeLibrary() {
 
 void _onFatal(Object error, StackTrace stack) {
   stderr
-    ..writeln('--- Bridge encountered a fatal error ---')
+    ..writeln(kBridgeFatalError)
     ..writeln('Error: $error')
     ..writeln('Stack trace:\n$stack');
-  unawaited(_exit(1));
+  unawaited(
+    Future.sync(() => _bridge?.release())
+        .timeout(const Duration(seconds: 5))
+        .whenComplete(() => _exit(1)),
+  );
 }
 
 /// usb_gadget's native bridge keeps ports open after the gadget is removed,

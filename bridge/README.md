@@ -31,30 +31,32 @@ when a complete frame is available, handling partial TCP reads correctly.
 
 ## Usage
 
-Compile and run with root privileges:
+Build it for Android with `tool/build_bridge.sh` (see the script), then run it as root:
 
 ```bash
-dart compile exe bin/bridge.dart -o bridge
-sudo ./bridge \
-  --client-pid     12345         \   # shut down when this PID exits
-  --process-path   /tmp/ds3/proc \   # where to write <pid>:<port>
-  --usb-config-bak adb               # sys.usb.config value to restore on exit
+./bridge \
+  --client-pid   12345 \        # shut down when this PID exits
+  --process-path /tmp/ds3/proc  # where to write <pid>:<port>
 ```
 
-On startup the bridge:
+The app only installs and starts it. On startup the bridge, logging each step:
 
-1. Registers the DualShock 3 USB gadget and binds it to the default UDC.
-2. Binds a TCP server on `127.0.0.1` at an ephemeral port.
-3. Writes `<pid>:<port>` to the process file so the Flutter client can discover the port.
-4. Deletes the process file on clean shutdown.
+1. Prints a device description (model, Android, kernel, root manager, SELinux,
+   configfs/FunctionFS, USB controllers, gadgets, USB properties) for bug reports.
+2. Stops a bridge left running by a previous start: SIGTERM, then SIGKILL.
+3. Writes usb_gadget's native library, and mounts configfs if Android hasn't.
+4. Takes USB from Android: backs up `persist.sys.usb.config`, sets `sys.usb.config` to
+   `none`, and waits for `sys.usb.state` to follow.
+5. Registers the DualShock 3 USB gadget, binds it to the default UDC, and listens on
+   `127.0.0.1` at an ephemeral port.
+6. Writes `<pid>:<port>` to the process file so the app can find the port.
 
 ## CLI flags
 
-| Flag                       | Default                              | Description                                                                              |
-|----------------------------|--------------------------------------|------------------------------------------------------------------------------------------|
-| `--process-path <path>`    | `/data/local/tmp/ds3_bridge/process` | Path for the PID/port discovery file                                                     |
-| `--client-pid <pid>`       | —                                    | Poll `/proc/<pid>` every second; shut down automatically when the client process exits   |
-| `--usb-config-bak <value>` | —                                    | `sys.usb.config` value to restore via `setprop` on shutdown, handing USB back to Android |
+| Flag                    | Default                              | Description                                                                            |
+|-------------------------|--------------------------------------|----------------------------------------------------------------------------------------|
+| `--process-path <path>` | `/data/local/tmp/ds3_bridge/process` | Path for the PID/port discovery file                                                   |
+| `--client-pid <pid>`    | —                                    | Poll `/proc/<pid>` every second; shut down automatically when the client process exits |
 
 ## Shutdown
 
@@ -62,8 +64,10 @@ The bridge shuts down cleanly when any of the following occurs:
 
 - The client sends a `shutdown` (`0xFF`) frame.
 - The watched PID disappears from `/proc`.
+- It receives SIGTERM or SIGINT.
+
 A client disconnecting doesn't shut it down: another can connect.
 
 On shutdown, in order: the watchdog is cancelled, the session is closed, the TCP server
-is closed, the USB gadget is removed, and the system USB config is restored if
-`--usb-config-bak` was provided.
+is closed, the USB gadget is removed, USB is given back to Android, and the process file
+is deleted. A fatal error releases it the same way before exiting.

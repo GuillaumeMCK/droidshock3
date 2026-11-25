@@ -7,6 +7,7 @@ export '/injection.dart';
 export 'gen/assets.gen.dart';
 export 'hooks.dart';
 export 'logger/logger.dart';
+export 'root.dart';
 export 'styles/styles.dart';
 
 export 'widgets/layout/gap.dart';

@@ -5,6 +5,10 @@ const kBridgeDir = '/data/local/tmp/ds3_bridge';
 /// client sent, so the client needn't send more often.
 const kInputReportInterval = Duration(milliseconds: 8);
 
+/// The first line the bridge writes to stderr when it fails, for the app to
+/// spot in its log.
+const kBridgeFatalError = '--- Bridge encountered a fatal error ---';
+
 /// How often the bridge checks whether the client process is still alive.
 const kPidPollInterval = Duration(seconds: 1);
 

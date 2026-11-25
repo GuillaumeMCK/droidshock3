@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:protocol/protocol.dart';
 import 'package:flutter/services.dart';
-import 'package:root_plus/root_plus.dart';
 
 import '/bootstrap/bootstrap_cubit.dart';
 import '/common/common.dart';
@@ -35,6 +34,10 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
   List<bool> get ledStates => _outputReport.ledStates;
 
   static const kExePath = '$kBridgeDir/bridge';
+
+  /// How long the bridge may take to start listening: it may first stop a
+  /// previous one, and wait for Android to free USB.
+  static const kStartTimeout = Duration(seconds: 15);
   static final logPath = '$fTmpDir/bridge.log';
   static final processPath = '$fTmpDir/process';
 
@@ -86,37 +89,51 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
       return log?.warn('Setup already in progress or completed');
     }
     emit(.setup);
-    final exeTmpPath = '$fTmpDir/bridge';
-    final bytes = await rootBundle.load(Assets.bridge);
+    final String exeTmpPath = '$fTmpDir/bridge';
+    final ByteData bytes = await rootBundle.load(Assets.bridge);
     await File(exeTmpPath).writeAsBytes(bytes.buffer.asUint8List());
-    await RootPlus.executeRootCommand('''
-      if [ -f $processPath ]; then
-        sleep ${kPidPollInterval.inSeconds}
-        rm -f $processPath
-      fi
-      
-      if [ -d $kBridgeDir ]; then
-        rm -rf $kBridgeDir
-      fi
-      
-      if [ ! -d /sys/kernel/config/usb_gadget ]; then
-        mount -t configfs none /sys/kernel/config
-      fi
 
-      USB_CONFIG_BAK=\$(getprop persist.sys.usb.config)
-      setprop sys.usb.config none
-
-      mkdir -p $kBridgeDir
-      mv $exeTmpPath $kExePath
-      chmod +x $kExePath
-
-      export LD_LIBRARY_PATH=$kBridgeDir
-      nohup $kExePath --process-path $processPath --client-pid $pid --usb-config-bak "\$USB_CONFIG_BAK" > $logPath 2>&1 &
-    
-      timeout 3 sh -c 'until [ -f $processPath ]; do sleep 0.1; done'
-    ''');
+    final File processFile = File(processPath);
+    final String? previous = processFile.existsSync()
+        ? processFile.readAsStringSync()
+        : null;
+    // Only installs and starts it: the bridge does the rest itself, logged
+    // (bridge/bin/bridge.dart), stopping a previous one first.
+    await su(
+      'mkdir -p $kBridgeDir && mv -f $exeTmpPath $kExePath && '
+      'chmod 0755 $kExePath && '
+      '{ nohup $kExePath --process-path $processPath --client-pid $pid '
+      '< /dev/null > $logPath 2>&1 & }',
+    );
+    await _waitForStart(processFile, previous);
     emit(.ready);
   }, _onError);
+
+  /// Waits for the bridge to write a new process file, or to fail, which its
+  /// log says.
+  Future<void> _waitForStart(File processFile, String? previous) async {
+    final File logFile = File(logPath);
+    final Stopwatch waited = Stopwatch()..start();
+    while (true) {
+      if (processFile.existsSync()) {
+        final String info = processFile.readAsStringSync();
+        if (info.isNotEmpty && info != previous) return;
+      }
+      final String bridgeLog = logFile.existsSync()
+          ? logFile.readAsStringSync()
+          : '';
+      if (bridgeLog.contains(kBridgeFatalError)) {
+        throw Exception('The bridge failed to start:\n$bridgeLog');
+      }
+      if (waited.elapsed > kStartTimeout) {
+        throw TimeoutException(
+          'The bridge didn\'t start in ${kStartTimeout.inSeconds} s:\n'
+          '$bridgeLog',
+        );
+      }
+      await Future<void>.delayed(100.ms);
+    }
+  }
 
   Future<void> connect() async => runZonedGuarded(() async {
     if (state.type != .ready) {
@@ -158,17 +175,42 @@ class BridgeCubit extends Cubit<BridgeState> with AppLogger {
     _outputStream = null;
     _buffer.clear();
 
-    await RootPlus.executeRootCommand('''
-      sleep ${kPidPollInterval.inSeconds}
-      if [ -f $processPath ]; then
-        kill \$(cut -d: -f1 $processPath)
-        rm -f $processPath
-      fi
-      rm -rf $kBridgeDir
-    ''');
-
+    await _stopBridge();
     emit(.none);
   }, _onError);
+
+  /// Waits for the bridge to exit, which it does on the shutdown frame, else
+  /// stops it: SIGTERM, which it cleans up on, then SIGKILL.
+  Future<void> _stopBridge() async {
+    final File processFile = File(processPath);
+    if (await _exited(processFile)) return;
+    final String bridgePid = processFile.readAsStringSync().split(':').first;
+    // Only a bridge: the PID may have been reused since.
+    String ifBridge(String command) =>
+        'grep -q $kBridgeDir /proc/$bridgePid/cmdline 2>/dev/null && '
+        '$command || true';
+
+    log?.warn('Bridge $bridgePid still running: sending SIGTERM');
+    await su(ifBridge('kill -TERM $bridgePid'));
+    if (await _exited(processFile)) return;
+
+    log?.warn('Bridge $bridgePid ignored SIGTERM: killing it');
+    await su('${ifBridge('kill -KILL $bridgePid')}; rm -f $processPath');
+  }
+
+  /// Whether the bridge deletes [processFile], which it does last, within
+  /// [timeout].
+  Future<bool> _exited(
+    File processFile, {
+    Duration timeout = const Duration(seconds: 3),
+  }) async {
+    final Stopwatch waited = Stopwatch()..start();
+    while (processFile.existsSync()) {
+      if (waited.elapsed > timeout) return false;
+      await Future<void>.delayed(50.ms);
+    }
+    return true;
+  }
 
   Future<void> _onError(Object err, StackTrace st) async {
     emit(.error(err, st));

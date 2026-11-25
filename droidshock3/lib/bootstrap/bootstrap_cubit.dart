@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:root_plus/root_plus.dart';
 
 import '/bridge/bridge_cubit.dart';
 import '/app/app_bloc_observer.dart';
@@ -63,14 +62,18 @@ class BootstrapCubit extends Cubit<BootstrapState> with BootstrapLogger {
     runApp();
 
     if (!await _initialize('Root Access', () async {
-      final hasRoot = await RootPlus.requestRootAccess();
-      if (!hasRoot) throw Exception('Root access denied');
+      // The root manager may ask the user first.
+      final String uid = await su('id -u', timeout: const Duration(minutes: 1));
+      if (uid.trim() != '0') {
+        throw Exception('su runs commands as user ${uid.trim()}, not root');
+      }
     }, timeout: null)) {
       return watcher.stop();
     }
 
     final bridgeCubit = getIt<BridgeCubit>();
-    await _initialize('Bridge Setup', bridgeCubit.setup);
+    // Setup has its own timeouts: the bridge may first stop a previous one.
+    await _initialize('Bridge Setup', bridgeCubit.setup, timeout: null);
     if (bridgeCubit.state case BridgeError(:final error, :final stackTrace)) {
       return emit(BootstrapError('Bridge Setup', error, stackTrace));
     }

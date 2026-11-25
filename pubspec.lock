@@ -936,14 +936,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
-  root_plus:
-    dependency: transitive
-    description:
-      name: root_plus
-      sha256: a3d5b0671cef7745556a8afbd7c075d7198c0d8e9e16390db09abae77c6e9034
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
   screen_brightness:
     dependency: transitive
     description:
